@@ -1,0 +1,2792 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "datstorm2-1stround-chandra.ipynb",
+      "provenance": [],
+      "collapsed_sections": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "zzUgjLHi7AAB"
+      },
+      "source": [
+        "Downloading the Dataset"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "JxXp71Kk4vHu",
+        "outputId": "ca017590-4d56-42b9-ccd6-9b8bd195d665"
+      },
+      "source": [
+        "!gdown --id 1MIKKj8Gi-xUwhsYt6xEV6FSmX0_Le8iL\n",
+        "!unzip -q 'data-storm-20.zip'"
+      ],
+      "execution_count": 1,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Downloading...\n",
+            "From: https://drive.google.com/uc?id=1MIKKj8Gi-xUwhsYt6xEV6FSmX0_Le8iL\n",
+            "To: /content/data-storm-20.zip\n",
+            "\r  0% 0.00/1.23M [00:00<?, ?B/s]\r100% 1.23M/1.23M [00:00<00:00, 77.5MB/s]\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "sOC5ptGU7FFE"
+      },
+      "source": [
+        "### Preparing Data & Feature Engineering"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "zaX8cK0l47ke"
+      },
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt"
+      ],
+      "execution_count": 2,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "uv0bUOKW5EFt"
+      },
+      "source": [
+        "data_train = pd.read_csv('Hotel-A-train.csv', index_col=0)\n",
+        "data_validation = pd.read_csv('Hotel-A-validation.csv', index_col = 0)"
+      ],
+      "execution_count": 3,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "TbkdjpLZXBGt",
+        "outputId": "20b656c0-17a7-47aa-f8a5-5d8aae4bc77c"
+      },
+      "source": [
+        "data_train.shape, data_validation.shape"
+      ],
+      "execution_count": 4,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "((27499, 23), (2749, 23))"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 4
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "OOaFxRuPWz-6"
+      },
+      "source": [
+        "data_train = data_train.append(data_validation)"
+      ],
+      "execution_count": 5,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "AOsm_1DsW_Jj",
+        "outputId": "c5639c5d-97fa-4482-e108-fa00869fa64a"
+      },
+      "source": [
+        "data_train.shape"
+      ],
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(30248, 23)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 6
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 323
+        },
+        "id": "0Ti5CWq95bL-",
+        "outputId": "f1b0d14b-8067-4fb9-97f5-2628ff12ef68"
+      },
+      "source": [
+        "data_train.head()"
+      ],
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Gender</th>\n",
+              "      <th>Age</th>\n",
+              "      <th>Ethnicity</th>\n",
+              "      <th>Educational_Level</th>\n",
+              "      <th>Income</th>\n",
+              "      <th>Country_region</th>\n",
+              "      <th>Hotel_Type</th>\n",
+              "      <th>Expected_checkin</th>\n",
+              "      <th>Expected_checkout</th>\n",
+              "      <th>Booking_date</th>\n",
+              "      <th>Adults</th>\n",
+              "      <th>Children</th>\n",
+              "      <th>Babies</th>\n",
+              "      <th>Meal_Type</th>\n",
+              "      <th>Visted_Previously</th>\n",
+              "      <th>Previous_Cancellations</th>\n",
+              "      <th>Deposit_type</th>\n",
+              "      <th>Booking_channel</th>\n",
+              "      <th>Required_Car_Parking</th>\n",
+              "      <th>Reservation_Status</th>\n",
+              "      <th>Use_Promotion</th>\n",
+              "      <th>Discount_Rate</th>\n",
+              "      <th>Room_Rate</th>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>Reservation-id</th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>39428300</th>\n",
+              "      <td>F</td>\n",
+              "      <td>40</td>\n",
+              "      <td>Latino</td>\n",
+              "      <td>Grad</td>\n",
+              "      <td>&lt;25K</td>\n",
+              "      <td>North</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>7/1/2015</td>\n",
+              "      <td>7/2/2015</td>\n",
+              "      <td>5/21/2015</td>\n",
+              "      <td>2</td>\n",
+              "      <td>2</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Online</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>10</td>\n",
+              "      <td>218</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>77491756</th>\n",
+              "      <td>F</td>\n",
+              "      <td>49</td>\n",
+              "      <td>Latino</td>\n",
+              "      <td>Mid-School</td>\n",
+              "      <td>50K -- 100K</td>\n",
+              "      <td>East</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>7/1/2015</td>\n",
+              "      <td>7/2/2015</td>\n",
+              "      <td>5/26/2015</td>\n",
+              "      <td>3</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>Refundable</td>\n",
+              "      <td>Online</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>No</td>\n",
+              "      <td>0</td>\n",
+              "      <td>185</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>73747291</th>\n",
+              "      <td>F</td>\n",
+              "      <td>42</td>\n",
+              "      <td>caucasian</td>\n",
+              "      <td>Grad</td>\n",
+              "      <td>&lt;25K</td>\n",
+              "      <td>East</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>7/2/2015</td>\n",
+              "      <td>7/6/2015</td>\n",
+              "      <td>6/29/2015</td>\n",
+              "      <td>3</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Online</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>No</td>\n",
+              "      <td>0</td>\n",
+              "      <td>119</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>67301739</th>\n",
+              "      <td>M</td>\n",
+              "      <td>25</td>\n",
+              "      <td>African American</td>\n",
+              "      <td>College</td>\n",
+              "      <td>&gt;100K</td>\n",
+              "      <td>South</td>\n",
+              "      <td>Airport Hotels</td>\n",
+              "      <td>7/2/2015</td>\n",
+              "      <td>7/3/2015</td>\n",
+              "      <td>6/20/2015</td>\n",
+              "      <td>4</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>Refundable</td>\n",
+              "      <td>Agent</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>5</td>\n",
+              "      <td>144</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>77222321</th>\n",
+              "      <td>F</td>\n",
+              "      <td>62</td>\n",
+              "      <td>Latino</td>\n",
+              "      <td>High-School</td>\n",
+              "      <td>25K --50K</td>\n",
+              "      <td>East</td>\n",
+              "      <td>Resort</td>\n",
+              "      <td>7/3/2015</td>\n",
+              "      <td>7/4/2015</td>\n",
+              "      <td>6/20/2015</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Direct</td>\n",
+              "      <td>No</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>10</td>\n",
+              "      <td>242</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "               Gender  Age  ... Discount_Rate Room_Rate\n",
+              "Reservation-id              ...                        \n",
+              "39428300            F   40  ...            10       218\n",
+              "77491756            F   49  ...             0       185\n",
+              "73747291            F   42  ...             0       119\n",
+              "67301739            M   25  ...             5       144\n",
+              "77222321            F   62  ...            10       242\n",
+              "\n",
+              "[5 rows x 23 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 7
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "TW1eoGh95dyq",
+        "outputId": "8e94cae1-a7c6-4e54-db3b-0be9bcaebfed"
+      },
+      "source": [
+        "data_train.dtypes"
+      ],
+      "execution_count": 8,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Gender                    object\n",
+              "Age                        int64\n",
+              "Ethnicity                 object\n",
+              "Educational_Level         object\n",
+              "Income                    object\n",
+              "Country_region            object\n",
+              "Hotel_Type                object\n",
+              "Expected_checkin          object\n",
+              "Expected_checkout         object\n",
+              "Booking_date              object\n",
+              "Adults                     int64\n",
+              "Children                   int64\n",
+              "Babies                     int64\n",
+              "Meal_Type                 object\n",
+              "Visted_Previously         object\n",
+              "Previous_Cancellations    object\n",
+              "Deposit_type              object\n",
+              "Booking_channel           object\n",
+              "Required_Car_Parking      object\n",
+              "Reservation_Status        object\n",
+              "Use_Promotion             object\n",
+              "Discount_Rate              int64\n",
+              "Room_Rate                  int64\n",
+              "dtype: object"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 8
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 297
+        },
+        "id": "LoJg0hwu5l-V",
+        "outputId": "79fe43d3-15f7-4c9b-c54e-ebe66ce30c3f"
+      },
+      "source": [
+        "data_train.describe()"
+      ],
+      "execution_count": 9,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Age</th>\n",
+              "      <th>Adults</th>\n",
+              "      <th>Children</th>\n",
+              "      <th>Babies</th>\n",
+              "      <th>Discount_Rate</th>\n",
+              "      <th>Room_Rate</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>count</th>\n",
+              "      <td>30248.000000</td>\n",
+              "      <td>30248.000000</td>\n",
+              "      <td>30248.000000</td>\n",
+              "      <td>30248.000000</td>\n",
+              "      <td>30248.000000</td>\n",
+              "      <td>30248.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>mean</th>\n",
+              "      <td>43.997388</td>\n",
+              "      <td>2.333873</td>\n",
+              "      <td>1.743586</td>\n",
+              "      <td>0.349940</td>\n",
+              "      <td>12.494214</td>\n",
+              "      <td>175.009786</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>std</th>\n",
+              "      <td>15.294786</td>\n",
+              "      <td>1.177353</td>\n",
+              "      <td>0.722228</td>\n",
+              "      <td>0.572767</td>\n",
+              "      <td>11.202236</td>\n",
+              "      <td>43.878472</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>min</th>\n",
+              "      <td>18.000000</td>\n",
+              "      <td>1.000000</td>\n",
+              "      <td>1.000000</td>\n",
+              "      <td>0.000000</td>\n",
+              "      <td>0.000000</td>\n",
+              "      <td>100.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>25%</th>\n",
+              "      <td>31.000000</td>\n",
+              "      <td>2.000000</td>\n",
+              "      <td>1.000000</td>\n",
+              "      <td>0.000000</td>\n",
+              "      <td>5.000000</td>\n",
+              "      <td>137.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>50%</th>\n",
+              "      <td>44.000000</td>\n",
+              "      <td>2.000000</td>\n",
+              "      <td>2.000000</td>\n",
+              "      <td>0.000000</td>\n",
+              "      <td>10.000000</td>\n",
+              "      <td>174.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>75%</th>\n",
+              "      <td>57.000000</td>\n",
+              "      <td>3.000000</td>\n",
+              "      <td>2.000000</td>\n",
+              "      <td>1.000000</td>\n",
+              "      <td>20.000000</td>\n",
+              "      <td>214.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>max</th>\n",
+              "      <td>70.000000</td>\n",
+              "      <td>5.000000</td>\n",
+              "      <td>3.000000</td>\n",
+              "      <td>2.000000</td>\n",
+              "      <td>40.000000</td>\n",
+              "      <td>250.000000</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "                Age        Adults  ...  Discount_Rate     Room_Rate\n",
+              "count  30248.000000  30248.000000  ...   30248.000000  30248.000000\n",
+              "mean      43.997388      2.333873  ...      12.494214    175.009786\n",
+              "std       15.294786      1.177353  ...      11.202236     43.878472\n",
+              "min       18.000000      1.000000  ...       0.000000    100.000000\n",
+              "25%       31.000000      2.000000  ...       5.000000    137.000000\n",
+              "50%       44.000000      2.000000  ...      10.000000    174.000000\n",
+              "75%       57.000000      3.000000  ...      20.000000    214.000000\n",
+              "max       70.000000      5.000000  ...      40.000000    250.000000\n",
+              "\n",
+              "[8 rows x 6 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 9
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "QuslQMih5rUV",
+        "outputId": "0a18e90b-a2fe-413d-ab94-9320360decb7"
+      },
+      "source": [
+        "data_train.isnull().sum()"
+      ],
+      "execution_count": 10,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Gender                    0\n",
+              "Age                       0\n",
+              "Ethnicity                 0\n",
+              "Educational_Level         0\n",
+              "Income                    0\n",
+              "Country_region            0\n",
+              "Hotel_Type                0\n",
+              "Expected_checkin          0\n",
+              "Expected_checkout         0\n",
+              "Booking_date              0\n",
+              "Adults                    0\n",
+              "Children                  0\n",
+              "Babies                    0\n",
+              "Meal_Type                 0\n",
+              "Visted_Previously         0\n",
+              "Previous_Cancellations    0\n",
+              "Deposit_type              0\n",
+              "Booking_channel           0\n",
+              "Required_Car_Parking      0\n",
+              "Reservation_Status        0\n",
+              "Use_Promotion             0\n",
+              "Discount_Rate             0\n",
+              "Room_Rate                 0\n",
+              "dtype: int64"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 10
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "zJqpP5aT509k",
+        "outputId": "8d7e7bb5-eaad-495f-e24e-5e807ae390ce"
+      },
+      "source": [
+        "data_train.columns"
+      ],
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Index(['Gender', 'Age', 'Ethnicity', 'Educational_Level', 'Income',\n",
+              "       'Country_region', 'Hotel_Type', 'Expected_checkin', 'Expected_checkout',\n",
+              "       'Booking_date', 'Adults', 'Children', 'Babies', 'Meal_Type',\n",
+              "       'Visted_Previously', 'Previous_Cancellations', 'Deposit_type',\n",
+              "       'Booking_channel', 'Required_Car_Parking', 'Reservation_Status',\n",
+              "       'Use_Promotion', 'Discount_Rate', 'Room_Rate'],\n",
+              "      dtype='object')"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 11
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "hDRZTjxYPK_X"
+      },
+      "source": [
+        "object_cols = ['Gender', 'Ethnicity', 'Educational_Level',\n",
+        "       'Income', 'Country_region', 'Hotel_Type', \n",
+        "       'Meal_Type', 'Visted_Previously', 'Previous_Cancellations',\n",
+        "       'Deposit_type', 'Booking_channel', 'Required_Car_Parking',\n",
+        "       'Reservation_Status', 'Use_Promotion']\n",
+        "# these columns need to be onehot encode or vectorise\n",
+        "\n",
+        "dates = ['Expected_checkin', 'Expected_checkout', 'Booking_date'] #need to feature engineer"
+      ],
+      "execution_count": 12,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "EoCt8iKjRSKj",
+        "outputId": "d5d0195c-7d5b-40a6-a787-6fdb9ffd462e"
+      },
+      "source": [
+        "for col in object_cols:\n",
+        "  print(col, pd.unique(data_train[col]))"
+      ],
+      "execution_count": 13,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Gender ['F' 'M']\n",
+            "Ethnicity ['Latino' 'caucasian' 'African American' 'Asian American']\n",
+            "Educational_Level ['Grad' 'Mid-School' 'College' 'High-School']\n",
+            "Income ['<25K' '50K -- 100K' '>100K' '25K --50K']\n",
+            "Country_region ['North' 'East' 'South' 'West']\n",
+            "Hotel_Type ['City Hotel' 'Airport Hotels' 'Resort']\n",
+            "Meal_Type ['BB' 'FB' 'HB']\n",
+            "Visted_Previously ['No' 'Yes']\n",
+            "Previous_Cancellations ['No' 'Yes']\n",
+            "Deposit_type ['No Deposit' 'Refundable' 'Non-Refundable']\n",
+            "Booking_channel ['Online' 'Agent' 'Direct']\n",
+            "Required_Car_Parking ['Yes' 'No']\n",
+            "Reservation_Status ['Check-In' 'Canceled' 'No-Show']\n",
+            "Use_Promotion ['Yes' 'No']\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "PD6_IuQbPxoJ"
+      },
+      "source": [
+        "one_hot_encoded_lst = ['Ethnicity', 'Educational_Level',\n",
+        "       'Income', 'Country_region', 'Hotel_Type', \n",
+        "       'Meal_Type', 'Deposit_type', 'Booking_channel'] "
+      ],
+      "execution_count": 14,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "5KDI3sWjP_pc"
+      },
+      "source": [
+        "data_train = pd.get_dummies(data_train, columns=one_hot_encoded_lst)"
+      ],
+      "execution_count": 15,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "mgfsct9kQSN2",
+        "outputId": "f238d160-19be-41d0-a185-6b12e79de2ab"
+      },
+      "source": [
+        "data_train.columns"
+      ],
+      "execution_count": 16,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Index(['Gender', 'Age', 'Expected_checkin', 'Expected_checkout',\n",
+              "       'Booking_date', 'Adults', 'Children', 'Babies', 'Visted_Previously',\n",
+              "       'Previous_Cancellations', 'Required_Car_Parking', 'Reservation_Status',\n",
+              "       'Use_Promotion', 'Discount_Rate', 'Room_Rate',\n",
+              "       'Ethnicity_African American', 'Ethnicity_Asian American',\n",
+              "       'Ethnicity_Latino', 'Ethnicity_caucasian', 'Educational_Level_College',\n",
+              "       'Educational_Level_Grad', 'Educational_Level_High-School',\n",
+              "       'Educational_Level_Mid-School', 'Income_25K --50K',\n",
+              "       'Income_50K -- 100K', 'Income_<25K', 'Income_>100K',\n",
+              "       'Country_region_East', 'Country_region_North', 'Country_region_South',\n",
+              "       'Country_region_West', 'Hotel_Type_Airport Hotels',\n",
+              "       'Hotel_Type_City Hotel', 'Hotel_Type_Resort', 'Meal_Type_BB',\n",
+              "       'Meal_Type_FB', 'Meal_Type_HB', 'Deposit_type_No Deposit',\n",
+              "       'Deposit_type_Non-Refundable', 'Deposit_type_Refundable',\n",
+              "       'Booking_channel_Agent', 'Booking_channel_Direct',\n",
+              "       'Booking_channel_Online'],\n",
+              "      dtype='object')"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 16
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "sT5r3z--Qoeq"
+      },
+      "source": [
+        "data_train['Gender'] = data_train['Gender'].map({'F':0, 'M':1})\n",
+        "data_train['Visted_Previously'] = data_train['Visted_Previously'].map({'No':0, 'Yes':1})\n",
+        "data_train['Previous_Cancellations'] = data_train['Previous_Cancellations'].map({'No':0, 'Yes':1})\n",
+        "data_train['Required_Car_Parking'] = data_train['Required_Car_Parking'].map({'Yes':1, 'No':0})\n",
+        "data_train['Use_Promotion'] = data_train['Use_Promotion'].map({'Yes':1, 'No':0})\n",
+        "data_train['Reservation_Status'] = data_train['Reservation_Status'].map({'Check-In':1, 'Canceled':2, 'No-Show':3})"
+      ],
+      "execution_count": 17,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "LsZBqlQTvp52"
+      },
+      "source": [
+        "data_train[dates[0]] = pd.to_datetime(data_train[dates[0]])\n",
+        "data_train[dates[1]] = pd.to_datetime(data_train[dates[1]])\n",
+        "data_train[dates[2]] = pd.to_datetime(data_train[dates[2]])"
+      ],
+      "execution_count": 18,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "81HDzvBZv6k9",
+        "outputId": "6cb7e1f9-be9c-4da4-9195-0ebb486e4a08"
+      },
+      "source": [
+        "data_train['Expected_stay'] = (data_train[dates[1]] - data_train[dates[0]]).dt.days\n",
+        "data_train['Expected_stay'].unique()"
+      ],
+      "execution_count": 19,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([1, 4, 3, 2])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 19
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "pcn8CZ2Iwaz0"
+      },
+      "source": [
+        "data_train['Booking_to_checkingin'] = (data_train[dates[0]] - data_train[dates[2]]).dt.days"
+      ],
+      "execution_count": 20,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "e0BMkLxYx88v"
+      },
+      "source": [
+        "data_train['Month_of_stay'] = data_train[dates[0]].dt.month"
+      ],
+      "execution_count": 21,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "NCKPOPzBwwGX"
+      },
+      "source": [
+        "weekdayin = data_train[dates[0]].dt.dayofweek\n",
+        "weekdayout = data_train[dates[1]].dt.dayofweek\n",
+        "from pandas import DataFrame\n",
+        "\n",
+        "fina = []\n",
+        "for x,y in zip(weekdayin, weekdayout):\n",
+        "  t = []\n",
+        "  if y >= x:\n",
+        "    for i in range(x, y + 1):\n",
+        "      t.append(i)\n",
+        "    if 5 in t or 6 in t:\n",
+        "      fina.append(1)\n",
+        "    else:\n",
+        "      fina.append(0)\n",
+        "  else:\n",
+        "    for i in range(x, 7):\n",
+        "      t.append(i)\n",
+        "    for j in range(0, y + 1):\n",
+        "      t.append(i)\n",
+        "    if 5 in t or 6 in t:\n",
+        "      fina.append(1)\n",
+        "    else:\n",
+        "      fina.append(0)\n",
+        "data_train['weekend_stay'] = DataFrame(fina,columns=['weekend_stay'])['weekend_stay'].values"
+      ],
+      "execution_count": 22,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "f-STqpPwyET0",
+        "outputId": "41e77724-4e88-4378-e945-92b021cb479f"
+      },
+      "source": [
+        "data_train.isnull().sum()"
+      ],
+      "execution_count": 23,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Gender                           0\n",
+              "Age                              0\n",
+              "Expected_checkin                 0\n",
+              "Expected_checkout                0\n",
+              "Booking_date                     0\n",
+              "Adults                           0\n",
+              "Children                         0\n",
+              "Babies                           0\n",
+              "Visted_Previously                0\n",
+              "Previous_Cancellations           0\n",
+              "Required_Car_Parking             0\n",
+              "Reservation_Status               0\n",
+              "Use_Promotion                    0\n",
+              "Discount_Rate                    0\n",
+              "Room_Rate                        0\n",
+              "Ethnicity_African American       0\n",
+              "Ethnicity_Asian American         0\n",
+              "Ethnicity_Latino                 0\n",
+              "Ethnicity_caucasian              0\n",
+              "Educational_Level_College        0\n",
+              "Educational_Level_Grad           0\n",
+              "Educational_Level_High-School    0\n",
+              "Educational_Level_Mid-School     0\n",
+              "Income_25K --50K                 0\n",
+              "Income_50K -- 100K               0\n",
+              "Income_<25K                      0\n",
+              "Income_>100K                     0\n",
+              "Country_region_East              0\n",
+              "Country_region_North             0\n",
+              "Country_region_South             0\n",
+              "Country_region_West              0\n",
+              "Hotel_Type_Airport Hotels        0\n",
+              "Hotel_Type_City Hotel            0\n",
+              "Hotel_Type_Resort                0\n",
+              "Meal_Type_BB                     0\n",
+              "Meal_Type_FB                     0\n",
+              "Meal_Type_HB                     0\n",
+              "Deposit_type_No Deposit          0\n",
+              "Deposit_type_Non-Refundable      0\n",
+              "Deposit_type_Refundable          0\n",
+              "Booking_channel_Agent            0\n",
+              "Booking_channel_Direct           0\n",
+              "Booking_channel_Online           0\n",
+              "Expected_stay                    0\n",
+              "Booking_to_checkingin            0\n",
+              "Month_of_stay                    0\n",
+              "weekend_stay                     0\n",
+              "dtype: int64"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 23
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 289
+        },
+        "id": "GoRHUhOOS8fq",
+        "outputId": "45b08b69-6c3b-43aa-83b7-9dc7603b3095"
+      },
+      "source": [
+        "data_train.head()"
+      ],
+      "execution_count": 25,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Gender</th>\n",
+              "      <th>Age</th>\n",
+              "      <th>Expected_checkin</th>\n",
+              "      <th>Expected_checkout</th>\n",
+              "      <th>Booking_date</th>\n",
+              "      <th>Adults</th>\n",
+              "      <th>Children</th>\n",
+              "      <th>Babies</th>\n",
+              "      <th>Visted_Previously</th>\n",
+              "      <th>Previous_Cancellations</th>\n",
+              "      <th>Required_Car_Parking</th>\n",
+              "      <th>Reservation_Status</th>\n",
+              "      <th>Use_Promotion</th>\n",
+              "      <th>Discount_Rate</th>\n",
+              "      <th>Room_Rate</th>\n",
+              "      <th>Ethnicity_African American</th>\n",
+              "      <th>Ethnicity_Asian American</th>\n",
+              "      <th>Ethnicity_Latino</th>\n",
+              "      <th>Ethnicity_caucasian</th>\n",
+              "      <th>Educational_Level_College</th>\n",
+              "      <th>Educational_Level_Grad</th>\n",
+              "      <th>Educational_Level_High-School</th>\n",
+              "      <th>Educational_Level_Mid-School</th>\n",
+              "      <th>Income_25K --50K</th>\n",
+              "      <th>Income_50K -- 100K</th>\n",
+              "      <th>Income_&lt;25K</th>\n",
+              "      <th>Income_&gt;100K</th>\n",
+              "      <th>Country_region_East</th>\n",
+              "      <th>Country_region_North</th>\n",
+              "      <th>Country_region_South</th>\n",
+              "      <th>Country_region_West</th>\n",
+              "      <th>Hotel_Type_Airport Hotels</th>\n",
+              "      <th>Hotel_Type_City Hotel</th>\n",
+              "      <th>Hotel_Type_Resort</th>\n",
+              "      <th>Meal_Type_BB</th>\n",
+              "      <th>Meal_Type_FB</th>\n",
+              "      <th>Meal_Type_HB</th>\n",
+              "      <th>Deposit_type_No Deposit</th>\n",
+              "      <th>Deposit_type_Non-Refundable</th>\n",
+              "      <th>Deposit_type_Refundable</th>\n",
+              "      <th>Booking_channel_Agent</th>\n",
+              "      <th>Booking_channel_Direct</th>\n",
+              "      <th>Booking_channel_Online</th>\n",
+              "      <th>Expected_stay</th>\n",
+              "      <th>Booking_to_checkingin</th>\n",
+              "      <th>Month_of_stay</th>\n",
+              "      <th>weekend_stay</th>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>Reservation-id</th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>39428300</th>\n",
+              "      <td>0</td>\n",
+              "      <td>40</td>\n",
+              "      <td>2015-07-01</td>\n",
+              "      <td>2015-07-02</td>\n",
+              "      <td>2015-05-21</td>\n",
+              "      <td>2</td>\n",
+              "      <td>2</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>10</td>\n",
+              "      <td>218</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>41</td>\n",
+              "      <td>7</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>77491756</th>\n",
+              "      <td>0</td>\n",
+              "      <td>49</td>\n",
+              "      <td>2015-07-01</td>\n",
+              "      <td>2015-07-02</td>\n",
+              "      <td>2015-05-26</td>\n",
+              "      <td>3</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>185</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>36</td>\n",
+              "      <td>7</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>73747291</th>\n",
+              "      <td>0</td>\n",
+              "      <td>42</td>\n",
+              "      <td>2015-07-02</td>\n",
+              "      <td>2015-07-06</td>\n",
+              "      <td>2015-06-29</td>\n",
+              "      <td>3</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>119</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>4</td>\n",
+              "      <td>3</td>\n",
+              "      <td>7</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>67301739</th>\n",
+              "      <td>1</td>\n",
+              "      <td>25</td>\n",
+              "      <td>2015-07-02</td>\n",
+              "      <td>2015-07-03</td>\n",
+              "      <td>2015-06-20</td>\n",
+              "      <td>4</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>5</td>\n",
+              "      <td>144</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>12</td>\n",
+              "      <td>7</td>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>77222321</th>\n",
+              "      <td>0</td>\n",
+              "      <td>62</td>\n",
+              "      <td>2015-07-03</td>\n",
+              "      <td>2015-07-04</td>\n",
+              "      <td>2015-06-20</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>10</td>\n",
+              "      <td>242</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>13</td>\n",
+              "      <td>7</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "                Gender  Age  ... Month_of_stay weekend_stay\n",
+              "Reservation-id               ...                           \n",
+              "39428300             0   40  ...             7            0\n",
+              "77491756             0   49  ...             7            0\n",
+              "73747291             0   42  ...             7            1\n",
+              "67301739             1   25  ...             7            0\n",
+              "77222321             0   62  ...             7            1\n",
+              "\n",
+              "[5 rows x 47 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 25
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "botZ8oQ7Tb3P"
+      },
+      "source": [
+        "def find_correlation(data, threshold=0.85): #removing correlated rows > 0.85\n",
+        "    corr_mat = data.corr()\n",
+        "    corr_mat.loc[:, :] = np.tril(corr_mat, k=-1)\n",
+        "    already_in = set()\n",
+        "    result = []\n",
+        "    for col in corr_mat:\n",
+        "        perfect_corr = corr_mat[col][abs(corr_mat[col])> threshold].index.tolist()\n",
+        "        if perfect_corr and col not in already_in:\n",
+        "            already_in.update(set(perfect_corr))\n",
+        "            perfect_corr.append(col)\n",
+        "            result.append(perfect_corr)\n",
+        "    select_nested = [f[1:] for f in result]\n",
+        "    select_flat = [i for j in select_nested for i in j]\n",
+        "    return select_flat"
+      ],
+      "execution_count": 26,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "_JxB9Rq_UvDX",
+        "outputId": "2e14efb8-e2ec-491b-a628-702f9ab74679"
+      },
+      "source": [
+        "find_correlation(data_train)"
+      ],
+      "execution_count": 27,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "[]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 27
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "RzagNm5SXlv2"
+      },
+      "source": [
+        " data_train = data_train.drop(dates, 1)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "d2u3ZD_4hBBZ"
+      },
+      "source": [
+        "from sklearn.utils import shuffle\n",
+        "data_train = shuffle(data_train)"
+      ],
+      "execution_count": 46,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Hlzh3PdcUz5i"
+      },
+      "source": [
+        "x = data_train.drop('Reservation_Status', 1)\n",
+        "y = data_train['Reservation_Status']"
+      ],
+      "execution_count": 47,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "bDHP8MoE170c"
+      },
+      "source": [
+        "from sklearn.model_selection import train_test_split\n",
+        "x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = .5)"
+      ],
+      "execution_count": 48,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "9MXCmiPxVpD_"
+      },
+      "source": [
+        "from sklearn.linear_model import LogisticRegression #trying different models\n",
+        "from sklearn.tree import DecisionTreeClassifier\n",
+        "from sklearn.ensemble import RandomForestClassifier\n",
+        "from sklearn.ensemble import GradientBoostingClassifier\n",
+        "from sklearn.ensemble import AdaBoostClassifier\n",
+        "from sklearn.ensemble import ExtraTreesClassifier\n",
+        "from sklearn.neighbors import KNeighborsClassifier\n",
+        "from sklearn.svm import SVC\n",
+        "from sklearn.naive_bayes import GaussianNB\n",
+        "#from sklearn.model_selection import KFold\n",
+        "from sklearn.metrics import accuracy_score"
+      ],
+      "execution_count": 49,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 667
+        },
+        "id": "o99Z7PzBV_Jv",
+        "outputId": "fc0b8e53-55db-4c96-fca5-21bc46edcbbe"
+      },
+      "source": [
+        "classifiers = [['Logistic Regression :', LogisticRegression(max_iter = 1500)],\n",
+        "       ['Decision Tree Classification :', DecisionTreeClassifier()],\n",
+        "       ['Gradient Boosting Classification :', GradientBoostingClassifier()],\n",
+        "       ['Ada Boosting Classification :', AdaBoostClassifier()],\n",
+        "       ['RandomForest Classification :', AdaBoostClassifier()],\n",
+        "       ['Extra Tree Classification :', ExtraTreesClassifier()],\n",
+        "       ['K-Neighbors Classification :', KNeighborsClassifier()],\n",
+        "       ['Support Vector Classification :',SVC()],\n",
+        "       ['Gaussian Naive Bayes :',GaussianNB()]]\n",
+        "\n",
+        "cla_pred = []\n",
+        "\n",
+        "for name,model in classifiers:\n",
+        "    model = model\n",
+        "    model.fit(x_train,y_train)\n",
+        "    predictions = model.predict(x_test)\n",
+        "    cla_pred.append(accuracy_score(y_test,predictions))\n",
+        "    print(name,accuracy_score(y_test,predictions))"
+      ],
+      "execution_count": 50,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "/usr/local/lib/python3.7/dist-packages/sklearn/linear_model/_logistic.py:940: ConvergenceWarning: lbfgs failed to converge (status=1):\n",
+            "STOP: TOTAL NO. of ITERATIONS REACHED LIMIT.\n",
+            "\n",
+            "Increase the number of iterations (max_iter) or scale the data as shown in:\n",
+            "    https://scikit-learn.org/stable/modules/preprocessing.html\n",
+            "Please also refer to the documentation for alternative solver options:\n",
+            "    https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression\n",
+            "  extra_warning_msg=_LOGISTIC_SOLVER_CONVERGENCE_MSG)\n"
+          ],
+          "name": "stderr"
+        },
+        {
+          "output_type": "stream",
+          "text": [
+            "Logistic Regression : 0.7571409679978841\n",
+            "Decision Tree Classification : 0.6012298333774134\n",
+            "Gradient Boosting Classification : 0.7562814070351759\n",
+            "Ada Boosting Classification : 0.7571409679978841\n",
+            "RandomForest Classification : 0.7571409679978841\n",
+            "Extra Tree Classification : 0.7542978048135414\n",
+            "K-Neighbors Classification : 0.727122454377149\n"
+          ],
+          "name": "stdout"
+        },
+        {
+          "output_type": "error",
+          "ename": "KeyboardInterrupt",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mKeyboardInterrupt\u001b[0m                         Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-50-9ad387e82a4c>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m()\u001b[0m\n\u001b[1;32m     13\u001b[0m \u001b[0;32mfor\u001b[0m \u001b[0mname\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0mmodel\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mclassifiers\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     14\u001b[0m     \u001b[0mmodel\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mmodel\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m---> 15\u001b[0;31m     \u001b[0mmodel\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mfit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx_train\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0my_train\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m     16\u001b[0m     \u001b[0mpredictions\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mmodel\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mpredict\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mx_test\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     17\u001b[0m     \u001b[0mcla_pred\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mappend\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0maccuracy_score\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0my_test\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0mpredictions\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/sklearn/svm/_base.py\u001b[0m in \u001b[0;36mfit\u001b[0;34m(self, X, y, sample_weight)\u001b[0m\n\u001b[1;32m    197\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    198\u001b[0m         \u001b[0mseed\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mrnd\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mrandint\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mnp\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0miinfo\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m'i'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mmax\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 199\u001b[0;31m         \u001b[0mfit\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mX\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0my\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0msample_weight\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0msolver_type\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mkernel\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mrandom_seed\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mseed\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    200\u001b[0m         \u001b[0;31m# see comment on the other call to np.iinfo in this file\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    201\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/sklearn/svm/_base.py\u001b[0m in \u001b[0;36m_dense_fit\u001b[0;34m(self, X, y, sample_weight, solver_type, kernel, random_seed)\u001b[0m\n\u001b[1;32m    256\u001b[0m                 \u001b[0mcache_size\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcache_size\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mcoef0\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcoef0\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    257\u001b[0m                 \u001b[0mgamma\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_gamma\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mepsilon\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mepsilon\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 258\u001b[0;31m                 max_iter=self.max_iter, random_seed=random_seed)\n\u001b[0m\u001b[1;32m    259\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    260\u001b[0m         \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_warn_from_fit_status\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mKeyboardInterrupt\u001b[0m: "
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "uxlbGRYnX-8u",
+        "outputId": "5b17fc9f-ecda-4beb-cbb6-325476e752fa"
+      },
+      "source": [
+        "model = DecisionTreeClassifier()\n",
+        "model.fit(x_train,y_train)\n",
+        "predictions = model.predict(x_test)\n",
+        "print(accuracy_score(y_test,predictions))"
+      ],
+      "execution_count": 89,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "0.5925619834710744\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "pncsC_QKYQVa",
+        "outputId": "3ad9f424-304f-4a65-e570-080556be3a7e"
+      },
+      "source": [
+        "x_test.shape , predictions.tolist().count(1), predictions.tolist().count(2), predictions.tolist().count(3)"
+      ],
+      "execution_count": 54,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "((6050, 43), 6010, 36, 4)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 54
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "q-Z5stT62OwL",
+        "outputId": "a2bc2381-8a55-46c4-b02e-a464840d00b0"
+      },
+      "source": [
+        "!pip install bayesian-optimization"
+      ],
+      "execution_count": 38,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Collecting bayesian-optimization\n",
+            "  Downloading https://files.pythonhosted.org/packages/bb/7a/fd8059a3881d3ab37ac8f72f56b73937a14e8bb14a9733e68cc8b17dbe3c/bayesian-optimization-1.2.0.tar.gz\n",
+            "Requirement already satisfied: numpy>=1.9.0 in /usr/local/lib/python3.7/dist-packages (from bayesian-optimization) (1.19.5)\n",
+            "Requirement already satisfied: scipy>=0.14.0 in /usr/local/lib/python3.7/dist-packages (from bayesian-optimization) (1.4.1)\n",
+            "Requirement already satisfied: scikit-learn>=0.18.0 in /usr/local/lib/python3.7/dist-packages (from bayesian-optimization) (0.22.2.post1)\n",
+            "Requirement already satisfied: joblib>=0.11 in /usr/local/lib/python3.7/dist-packages (from scikit-learn>=0.18.0->bayesian-optimization) (1.0.1)\n",
+            "Building wheels for collected packages: bayesian-optimization\n",
+            "  Building wheel for bayesian-optimization (setup.py) ... \u001b[?25l\u001b[?25hdone\n",
+            "  Created wheel for bayesian-optimization: filename=bayesian_optimization-1.2.0-cp37-none-any.whl size=11687 sha256=1992e35fbb6e1707cc49a0b1947b45cff4878c002dd4885fb290f3fd86806530\n",
+            "  Stored in directory: /root/.cache/pip/wheels/5a/56/ae/e0e3c1fc1954dc3ec712e2df547235ed072b448094d8f94aec\n",
+            "Successfully built bayesian-optimization\n",
+            "Installing collected packages: bayesian-optimization\n",
+            "Successfully installed bayesian-optimization-1.2.0\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "CCwyHle0YXtK"
+      },
+      "source": [
+        "#LGBMClassifier\n",
+        "from sklearn.model_selection import StratifiedKFold\n",
+        "from lightgbm import LGBMClassifier\n",
+        "\n",
+        "from sklearn.metrics import accuracy_score, classification_report, confusion_matrix\n",
+        "\n",
+        "def lgbm_evaluate(**params):\n",
+        "#     warnings.simplefilter('ignore')\n",
+        "    \n",
+        "    params['num_leaves'] = int(params['num_leaves'])\n",
+        "    params['max_depth'] = int(params['max_depth'])\n",
+        "        \n",
+        "    clf = LGBMClassifier(**params, n_estimators=20000, nthread=-1)\n",
+        "\n",
+        "    test_pred_proba = np.zeros((x_train.shape[0], 3))\n",
+        "    \n",
+        "    for n_fold, (train_idx, valid_idx) in enumerate(folds.split(x_train, y_train)):\n",
+        "        X_train_bo, X_valid = x_train.iloc[train_idx], x_train.iloc[valid_idx]\n",
+        "        y_train_bo, y_valid = y_train.iloc[train_idx], y_train.iloc[valid_idx]\n",
+        "        \n",
+        "        model = LGBMClassifier(**params, n_estimators = 10000, n_jobs = -1)\n",
+        "        model.fit(X_train_bo, y_train_bo, \n",
+        "                eval_set=[(X_train_bo, y_train_bo), (X_valid, y_valid)], eval_metric='binary_logloss',\n",
+        "                verbose=False, early_stopping_rounds=200)\n",
+        "\n",
+        "        y_pred_valid = model.predict_proba(X_valid)\n",
+        "\n",
+        "        test_pred_proba[valid_idx] = y_pred_valid\n",
+        "\n",
+        "    return accuracy_score(y_valid, y_pred_valid.argmax(1))"
+      ],
+      "execution_count": 41,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Ti9r6QBy1ZiF"
+      },
+      "source": [
+        "#hyper parameter tuning\n",
+        "params = {'colsample_bytree': (0.6, 1),\n",
+        "     'learning_rate': (.001, .08), \n",
+        "      'num_leaves': (8, 124), \n",
+        "      'subsample': (0.6, 1), \n",
+        "      'max_depth': (3, 25), \n",
+        "      'reg_alpha': (.05, 15.0), \n",
+        "      'reg_lambda': (.05, 15.0), \n",
+        "      'min_split_gain': (.001, .03),\n",
+        "      'min_child_weight': (12, 80)}\n",
+        "\n",
+        "from sklearn.model_selection import StratifiedKFold\n",
+        "n_fold = 20\n",
+        "folds = StratifiedKFold(n_splits=n_fold, shuffle=True, random_state=11)\n",
+        "\n",
+        "from bayes_opt import BayesianOptimization\n",
+        "bo = BayesianOptimization(lgbm_evaluate, params)\n",
+        "bo.maximize(init_points=5, n_iter=5)"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "09ds2tW91sRy"
+      },
+      "source": [
+        "import numpy as np\n",
+        "import pandas as pd\n",
+        "from keras.models import Sequential\n",
+        "from keras.layers import Dense, Dropout, Activation, Flatten"
+      ],
+      "execution_count": 55,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "d7Th8thq_UqI"
+      },
+      "source": [
+        "model = Sequential()\n",
+        "\n",
+        "model.add(Flatten())\n",
+        "\n",
+        "model.add(Dense(500))\n",
+        "model.add(Activation('relu'))\n",
+        "model.add(Dense(250))\n",
+        "model.add(Dropout(0.1))\n",
+        "model.add(Activation('relu'))\n",
+        "model.add(Dense(50))\n",
+        "model.add(Activation('relu'))\n",
+        "\n",
+        "model.add(Dense(3))\n",
+        "model.add(Activation('softmax'))\n",
+        "\n",
+        "model.compile(loss='sparse_categorical_crossentropy',\n",
+        "              optimizer='adam',\n",
+        "              metrics=['accuracy'])"
+      ],
+      "execution_count": 56,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 494
+        },
+        "id": "XQsEIcFICvmE",
+        "outputId": "1331a644-502d-4b39-9ba0-d2ec69bc5b49"
+      },
+      "source": [
+        "model.fit( x_train, y_train,\n",
+        "                    epochs = 10,\n",
+        "                    batch_size = 20,\n",
+        "                    validation_data = (x_test, y_test))\n",
+        "model.summary()"
+      ],
+      "execution_count": 57,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Epoch 1/10\n"
+          ],
+          "name": "stdout"
+        },
+        {
+          "output_type": "error",
+          "ename": "InvalidArgumentError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mInvalidArgumentError\u001b[0m                      Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-57-08cb9773ba72>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m()\u001b[0m\n\u001b[1;32m      2\u001b[0m                     \u001b[0mepochs\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;36m10\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      3\u001b[0m                     \u001b[0mbatch_size\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;36m20\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 4\u001b[0;31m                     validation_data = (x_test, y_test))\n\u001b[0m\u001b[1;32m      5\u001b[0m \u001b[0mmodel\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0msummary\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/tensorflow/python/keras/engine/training.py\u001b[0m in \u001b[0;36mfit\u001b[0;34m(self, x, y, batch_size, epochs, verbose, callbacks, validation_split, validation_data, shuffle, class_weight, sample_weight, initial_epoch, steps_per_epoch, validation_steps, validation_batch_size, validation_freq, max_queue_size, workers, use_multiprocessing)\u001b[0m\n\u001b[1;32m   1098\u001b[0m                 _r=1):\n\u001b[1;32m   1099\u001b[0m               \u001b[0mcallbacks\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mon_train_batch_begin\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mstep\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 1100\u001b[0;31m               \u001b[0mtmp_logs\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mtrain_function\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0miterator\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   1101\u001b[0m               \u001b[0;32mif\u001b[0m \u001b[0mdata_handler\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mshould_sync\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1102\u001b[0m                 \u001b[0mcontext\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0masync_wait\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/tensorflow/python/eager/def_function.py\u001b[0m in \u001b[0;36m__call__\u001b[0;34m(self, *args, **kwds)\u001b[0m\n\u001b[1;32m    826\u001b[0m     \u001b[0mtracing_count\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mexperimental_get_tracing_count\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    827\u001b[0m     \u001b[0;32mwith\u001b[0m \u001b[0mtrace\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mTrace\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_name\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;32mas\u001b[0m \u001b[0mtm\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 828\u001b[0;31m       \u001b[0mresult\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_call\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwds\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    829\u001b[0m       \u001b[0mcompiler\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;34m\"xla\"\u001b[0m \u001b[0;32mif\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_experimental_compile\u001b[0m \u001b[0;32melse\u001b[0m \u001b[0;34m\"nonXla\"\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    830\u001b[0m       \u001b[0mnew_tracing_count\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mexperimental_get_tracing_count\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/tensorflow/python/eager/def_function.py\u001b[0m in \u001b[0;36m_call\u001b[0;34m(self, *args, **kwds)\u001b[0m\n\u001b[1;32m    886\u001b[0m         \u001b[0;31m# Lifting succeeded, so variables are initialized and we can run the\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    887\u001b[0m         \u001b[0;31m# stateless function.\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 888\u001b[0;31m         \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_stateless_fn\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m*\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m**\u001b[0m\u001b[0mkwds\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m    889\u001b[0m     \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    890\u001b[0m       \u001b[0m_\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0m_\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0m_\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mfiltered_flat_args\u001b[0m \u001b[0;34m=\u001b[0m\u001b[0;31m \u001b[0m\u001b[0;31m\\\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/tensorflow/python/eager/function.py\u001b[0m in \u001b[0;36m__call__\u001b[0;34m(self, *args, **kwargs)\u001b[0m\n\u001b[1;32m   2941\u001b[0m        filtered_flat_args) = self._maybe_define_function(args, kwargs)\n\u001b[1;32m   2942\u001b[0m     return graph_function._call_flat(\n\u001b[0;32m-> 2943\u001b[0;31m         filtered_flat_args, captured_inputs=graph_function.captured_inputs)  # pylint: disable=protected-access\n\u001b[0m\u001b[1;32m   2944\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   2945\u001b[0m   \u001b[0;34m@\u001b[0m\u001b[0mproperty\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/tensorflow/python/eager/function.py\u001b[0m in \u001b[0;36m_call_flat\u001b[0;34m(self, args, captured_inputs, cancellation_manager)\u001b[0m\n\u001b[1;32m   1917\u001b[0m       \u001b[0;31m# No tape is watching; skip to running the function.\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   1918\u001b[0m       return self._build_call_outputs(self._inference_function.call(\n\u001b[0;32m-> 1919\u001b[0;31m           ctx, args, cancellation_manager=cancellation_manager))\n\u001b[0m\u001b[1;32m   1920\u001b[0m     forward_backward = self._select_forward_and_backward_functions(\n\u001b[1;32m   1921\u001b[0m         \u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/tensorflow/python/eager/function.py\u001b[0m in \u001b[0;36mcall\u001b[0;34m(self, ctx, args, cancellation_manager)\u001b[0m\n\u001b[1;32m    558\u001b[0m               \u001b[0minputs\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0margs\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    559\u001b[0m               \u001b[0mattrs\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0mattrs\u001b[0m\u001b[0;34m,\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m--> 560\u001b[0;31m               ctx=ctx)\n\u001b[0m\u001b[1;32m    561\u001b[0m         \u001b[0;32melse\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m    562\u001b[0m           outputs = execute.execute_with_cancellation(\n",
+            "\u001b[0;32m/usr/local/lib/python3.7/dist-packages/tensorflow/python/eager/execute.py\u001b[0m in \u001b[0;36mquick_execute\u001b[0;34m(op_name, num_outputs, inputs, attrs, ctx, name)\u001b[0m\n\u001b[1;32m     58\u001b[0m     \u001b[0mctx\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mensure_initialized\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     59\u001b[0m     tensors = pywrap_tfe.TFE_Py_Execute(ctx._handle, device_name, op_name,\n\u001b[0;32m---> 60\u001b[0;31m                                         inputs, attrs, num_outputs)\n\u001b[0m\u001b[1;32m     61\u001b[0m   \u001b[0;32mexcept\u001b[0m \u001b[0mcore\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_NotOkStatusException\u001b[0m \u001b[0;32mas\u001b[0m \u001b[0me\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m     62\u001b[0m     \u001b[0;32mif\u001b[0m \u001b[0mname\u001b[0m \u001b[0;32mis\u001b[0m \u001b[0;32mnot\u001b[0m \u001b[0;32mNone\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mInvalidArgumentError\u001b[0m:  Received a label value of 3 which is outside the valid range of [0, 3).  Label values: 1 1 3 1 1 3 1 1 1 2 1 2 1 1 1 1 1 1 1 1\n\t [[node sparse_categorical_crossentropy/SparseSoftmaxCrossEntropyWithLogits/SparseSoftmaxCrossEntropyWithLogits (defined at <ipython-input-57-08cb9773ba72>:4) ]] [Op:__inference_train_function_751]\n\nFunction call stack:\ntrain_function\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "3CCW2jIGDONq"
+      },
+      "source": [
+        "predictions = model.predict([x_test])"
+      ],
+      "execution_count": 62,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "kzVj35OYRVUq"
+      },
+      "source": [
+        "predictions = list(np.argmax(predictions[x]) for x in range(len(predictions)))"
+      ],
+      "execution_count": 63,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "PSn7L-zcRdp4",
+        "outputId": "f8f364bc-b701-4aac-d865-d80b6811a84e"
+      },
+      "source": [
+        "predictions.count(1), predictions.count(2), predictions.count(3)"
+      ],
+      "execution_count": 64,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(2750, 0, 0)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 64
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "CRO3fMRpZZgE"
+      },
+      "source": [
+        "**Submission**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "g8urulNoZ0B1"
+      },
+      "source": [
+        "def prepare_dataset(df, one_hot_encoded_lst, dates):\n",
+        "  df = pd.get_dummies(df, columns=one_hot_encoded_lst)\n",
+        "\n",
+        "  df['Gender'] = df['Gender'].map({'F':0, 'M':1})\n",
+        "  df['Visted_Previously'] = df['Visted_Previously'].map({'No':0, 'Yes':1})\n",
+        "  df['Previous_Cancellations'] = df['Previous_Cancellations'].map({'No':0, 'Yes':1})\n",
+        "  df['Required_Car_Parking'] = df['Required_Car_Parking'].map({'Yes':1, 'No':0})\n",
+        "  df['Use_Promotion'] = df['Use_Promotion'].map({'Yes':1, 'No':0})\n",
+        "\n",
+        "  df[dates[0]] = pd.to_datetime(df[dates[0]])\n",
+        "  df[dates[1]] = pd.to_datetime(df[dates[1]])\n",
+        "  df[dates[2]] = pd.to_datetime(df[dates[2]])\n",
+        "\n",
+        "  df['Expected_stay'] = (df[dates[1]] - df[dates[0]]).dt.days\n",
+        "  df['Booking_to_checkingin'] = (df[dates[0]] - df[dates[2]]).dt.days\n",
+        "  df['Month_of_stay'] = df[dates[0]].dt.month\n",
+        "\n",
+        "  weekdayin = df[dates[0]].dt.dayofweek\n",
+        "  weekdayout = df[dates[1]].dt.dayofweek\n",
+        "  from pandas import DataFrame\n",
+        "\n",
+        "  fina = []\n",
+        "  for x,y in zip(weekdayin, weekdayout):\n",
+        "    t = []\n",
+        "    if y >= x:\n",
+        "      for i in range(x, y + 1):\n",
+        "        t.append(i)\n",
+        "      if 5 in t or 6 in t:\n",
+        "        fina.append(1)\n",
+        "      else:\n",
+        "        fina.append(0)\n",
+        "    else:\n",
+        "      for i in range(x, 7):\n",
+        "        t.append(i)\n",
+        "      for j in range(0, y + 1):\n",
+        "        t.append(i)\n",
+        "      if 5 in t or 6 in t:\n",
+        "        fina.append(1)\n",
+        "      else:\n",
+        "        fina.append(0)\n",
+        "  df['weekend_stay'] = DataFrame(fina,columns=['weekend_stay'])['weekend_stay'].values\n",
+        "  df = df.drop(dates, 1)\n",
+        "\n",
+        "  return df"
+      ],
+      "execution_count": 43,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "BC7kq5S9RfSo"
+      },
+      "source": [
+        "data_test = pd.read_csv('Hotel-A-test.csv', index_col=0)"
+      ],
+      "execution_count": 90,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 357
+        },
+        "id": "fDNBEr0hbcAW",
+        "outputId": "217c1877-e40a-4bfa-fc95-fccbc8296328"
+      },
+      "source": [
+        "data_test.head()"
+      ],
+      "execution_count": 91,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Gender</th>\n",
+              "      <th>Age</th>\n",
+              "      <th>Ethnicity</th>\n",
+              "      <th>Educational_Level</th>\n",
+              "      <th>Income</th>\n",
+              "      <th>Country_region</th>\n",
+              "      <th>Hotel_Type</th>\n",
+              "      <th>Expected_checkin</th>\n",
+              "      <th>Expected_checkout</th>\n",
+              "      <th>Booking_date</th>\n",
+              "      <th>Adults</th>\n",
+              "      <th>Children</th>\n",
+              "      <th>Babies</th>\n",
+              "      <th>Meal_Type</th>\n",
+              "      <th>Visted_Previously</th>\n",
+              "      <th>Previous_Cancellations</th>\n",
+              "      <th>Deposit_type</th>\n",
+              "      <th>Booking_channel</th>\n",
+              "      <th>Required_Car_Parking</th>\n",
+              "      <th>Use_Promotion</th>\n",
+              "      <th>Discount_Rate</th>\n",
+              "      <th>Room_Rate</th>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>Reservation-id</th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>62931593</th>\n",
+              "      <td>F</td>\n",
+              "      <td>52</td>\n",
+              "      <td>Latino</td>\n",
+              "      <td>Grad</td>\n",
+              "      <td>25K --50K</td>\n",
+              "      <td>South</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>11/18/2016</td>\n",
+              "      <td>11/19/2016</td>\n",
+              "      <td>10/28/2016</td>\n",
+              "      <td>3</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>HB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Direct</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>10</td>\n",
+              "      <td>153</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>70586099</th>\n",
+              "      <td>F</td>\n",
+              "      <td>47</td>\n",
+              "      <td>Latino</td>\n",
+              "      <td>Grad</td>\n",
+              "      <td>25K --50K</td>\n",
+              "      <td>East</td>\n",
+              "      <td>Airport Hotels</td>\n",
+              "      <td>11/18/2016</td>\n",
+              "      <td>11/19/2016</td>\n",
+              "      <td>8/6/2016</td>\n",
+              "      <td>2</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>FB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Online</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>0</td>\n",
+              "      <td>210</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4230648</th>\n",
+              "      <td>F</td>\n",
+              "      <td>28</td>\n",
+              "      <td>Asian American</td>\n",
+              "      <td>Grad</td>\n",
+              "      <td>&lt;25K</td>\n",
+              "      <td>East</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>4/28/2017</td>\n",
+              "      <td>5/1/2017</td>\n",
+              "      <td>4/8/2017</td>\n",
+              "      <td>2</td>\n",
+              "      <td>2</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Agent</td>\n",
+              "      <td>No</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>5</td>\n",
+              "      <td>117</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>25192322</th>\n",
+              "      <td>F</td>\n",
+              "      <td>65</td>\n",
+              "      <td>caucasian</td>\n",
+              "      <td>High-School</td>\n",
+              "      <td>25K --50K</td>\n",
+              "      <td>South</td>\n",
+              "      <td>Airport Hotels</td>\n",
+              "      <td>11/18/2016</td>\n",
+              "      <td>11/20/2016</td>\n",
+              "      <td>5/20/2016</td>\n",
+              "      <td>1</td>\n",
+              "      <td>3</td>\n",
+              "      <td>2</td>\n",
+              "      <td>FB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Online</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>10</td>\n",
+              "      <td>107</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>80931528</th>\n",
+              "      <td>M</td>\n",
+              "      <td>45</td>\n",
+              "      <td>African American</td>\n",
+              "      <td>College</td>\n",
+              "      <td>25K --50K</td>\n",
+              "      <td>South</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>11/18/2016</td>\n",
+              "      <td>11/20/2016</td>\n",
+              "      <td>10/31/2016</td>\n",
+              "      <td>3</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>Refundable</td>\n",
+              "      <td>Agent</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>0</td>\n",
+              "      <td>119</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "               Gender  Age  ... Discount_Rate Room_Rate\n",
+              "Reservation-id              ...                        \n",
+              "62931593            F   52  ...            10       153\n",
+              "70586099            F   47  ...             0       210\n",
+              "4230648             F   28  ...             5       117\n",
+              "25192322            F   65  ...            10       107\n",
+              "80931528            M   45  ...             0       119\n",
+              "\n",
+              "[5 rows x 22 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 91
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Ta8bHkXuZk4N"
+      },
+      "source": [
+        "data_test = prepare_dataset(data_test, one_hot_encoded_lst, dates)"
+      ],
+      "execution_count": 92,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 289
+        },
+        "id": "a0-AVraKbf9b",
+        "outputId": "15493278-3627-4112-9aa7-80df2a2db8ed"
+      },
+      "source": [
+        "data_test.head()"
+      ],
+      "execution_count": 93,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Gender</th>\n",
+              "      <th>Age</th>\n",
+              "      <th>Adults</th>\n",
+              "      <th>Children</th>\n",
+              "      <th>Babies</th>\n",
+              "      <th>Visted_Previously</th>\n",
+              "      <th>Previous_Cancellations</th>\n",
+              "      <th>Required_Car_Parking</th>\n",
+              "      <th>Use_Promotion</th>\n",
+              "      <th>Discount_Rate</th>\n",
+              "      <th>Room_Rate</th>\n",
+              "      <th>Ethnicity_African American</th>\n",
+              "      <th>Ethnicity_Asian American</th>\n",
+              "      <th>Ethnicity_Latino</th>\n",
+              "      <th>Ethnicity_caucasian</th>\n",
+              "      <th>Educational_Level_College</th>\n",
+              "      <th>Educational_Level_Grad</th>\n",
+              "      <th>Educational_Level_High-School</th>\n",
+              "      <th>Educational_Level_Mid-School</th>\n",
+              "      <th>Income_25K --50K</th>\n",
+              "      <th>Income_50K -- 100K</th>\n",
+              "      <th>Income_&lt;25K</th>\n",
+              "      <th>Income_&gt;100K</th>\n",
+              "      <th>Country_region_East</th>\n",
+              "      <th>Country_region_North</th>\n",
+              "      <th>Country_region_South</th>\n",
+              "      <th>Country_region_West</th>\n",
+              "      <th>Hotel_Type_Airport Hotels</th>\n",
+              "      <th>Hotel_Type_City Hotel</th>\n",
+              "      <th>Hotel_Type_Resort</th>\n",
+              "      <th>Meal_Type_BB</th>\n",
+              "      <th>Meal_Type_FB</th>\n",
+              "      <th>Meal_Type_HB</th>\n",
+              "      <th>Deposit_type_No Deposit</th>\n",
+              "      <th>Deposit_type_Non-Refundable</th>\n",
+              "      <th>Deposit_type_Refundable</th>\n",
+              "      <th>Booking_channel_Agent</th>\n",
+              "      <th>Booking_channel_Direct</th>\n",
+              "      <th>Booking_channel_Online</th>\n",
+              "      <th>Expected_stay</th>\n",
+              "      <th>Booking_to_checkingin</th>\n",
+              "      <th>Month_of_stay</th>\n",
+              "      <th>weekend_stay</th>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>Reservation-id</th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "      <th></th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>62931593</th>\n",
+              "      <td>0</td>\n",
+              "      <td>52</td>\n",
+              "      <td>3</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>10</td>\n",
+              "      <td>153</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>21</td>\n",
+              "      <td>11</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>70586099</th>\n",
+              "      <td>0</td>\n",
+              "      <td>47</td>\n",
+              "      <td>2</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>210</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>104</td>\n",
+              "      <td>11</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4230648</th>\n",
+              "      <td>0</td>\n",
+              "      <td>28</td>\n",
+              "      <td>2</td>\n",
+              "      <td>2</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>5</td>\n",
+              "      <td>117</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>3</td>\n",
+              "      <td>20</td>\n",
+              "      <td>4</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>25192322</th>\n",
+              "      <td>0</td>\n",
+              "      <td>65</td>\n",
+              "      <td>1</td>\n",
+              "      <td>3</td>\n",
+              "      <td>2</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>10</td>\n",
+              "      <td>107</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>2</td>\n",
+              "      <td>182</td>\n",
+              "      <td>11</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>80931528</th>\n",
+              "      <td>1</td>\n",
+              "      <td>45</td>\n",
+              "      <td>3</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>119</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>0</td>\n",
+              "      <td>2</td>\n",
+              "      <td>18</td>\n",
+              "      <td>11</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "                Gender  Age  ...  Month_of_stay  weekend_stay\n",
+              "Reservation-id               ...                             \n",
+              "62931593             0   52  ...             11             1\n",
+              "70586099             0   47  ...             11             1\n",
+              "4230648              0   28  ...              4             1\n",
+              "25192322             0   65  ...             11             1\n",
+              "80931528             1   45  ...             11             1\n",
+              "\n",
+              "[5 rows x 43 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 93
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "hCamaWMhbipq"
+      },
+      "source": [
+        "test_predictions = model.predict(data_test)"
+      ],
+      "execution_count": 94,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "2ej5-wNxdn2d",
+        "outputId": "5bad012a-6435-42ea-9bff-0bd736f28b81"
+      },
+      "source": [
+        "test_predictions = test_predictions.tolist()\n",
+        "test_predictions.count(1), test_predictions.count(2), test_predictions.count(3)"
+      ],
+      "execution_count": 95,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(2831, 969, 518)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 95
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Hw7hnye3d55q",
+        "outputId": "17f34b8a-f5ff-4bc5-f95f-739e3938c856"
+      },
+      "source": [
+        "print(test_predictions)"
+      ],
+      "execution_count": 96,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "[2, 1, 1, 2, 1, 3, 1, 3, 1, 2, 2, 1, 3, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 3, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 3, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 1, 1, 3, 1, 1, 1, 2, 3, 1, 3, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 3, 2, 1, 3, 2, 3, 1, 3, 1, 2, 1, 1, 1, 2, 2, 1, 2, 1, 2, 2, 1, 1, 1, 2, 1, 3, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 3, 1, 2, 3, 1, 2, 1, 2, 1, 2, 3, 1, 1, 3, 1, 1, 1, 2, 1, 2, 2, 1, 1, 3, 1, 1, 1, 2, 1, 2, 3, 1, 2, 1, 1, 3, 3, 1, 2, 1, 1, 1, 1, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 3, 3, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 3, 2, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 3, 1, 1, 1, 1, 3, 2, 1, 1, 1, 1, 3, 1, 1, 3, 1, 3, 1, 1, 1, 2, 3, 1, 1, 2, 3, 1, 1, 1, 1, 2, 3, 2, 2, 2, 3, 2, 1, 2, 1, 2, 1, 3, 1, 2, 1, 2, 1, 1, 3, 1, 1, 2, 2, 3, 1, 1, 1, 3, 2, 1, 2, 2, 2, 1, 2, 1, 1, 1, 1, 1, 3, 1, 3, 3, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 2, 2, 3, 1, 2, 1, 2, 3, 1, 2, 2, 1, 1, 3, 3, 2, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 2, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 2, 1, 3, 1, 3, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 3, 2, 1, 1, 1, 1, 3, 2, 2, 2, 2, 2, 2, 1, 1, 1, 2, 1, 2, 3, 2, 1, 2, 3, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 2, 3, 1, 1, 2, 1, 1, 1, 1, 1, 1, 3, 2, 2, 1, 1, 1, 2, 3, 1, 2, 3, 3, 1, 1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 3, 3, 1, 1, 1, 2, 1, 1, 2, 3, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 3, 1, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 1, 1, 1, 3, 1, 1, 3, 3, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 3, 3, 2, 1, 1, 1, 2, 3, 1, 2, 2, 1, 2, 1, 1, 1, 2, 3, 1, 2, 1, 1, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 2, 2, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 1, 1, 1, 3, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 2, 1, 2, 3, 1, 1, 3, 1, 1, 1, 3, 3, 1, 2, 2, 1, 1, 3, 3, 1, 1, 1, 1, 2, 1, 2, 1, 3, 1, 1, 1, 1, 1, 3, 2, 1, 2, 3, 1, 1, 3, 1, 3, 3, 3, 1, 1, 1, 1, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1, 2, 1, 3, 3, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 3, 1, 1, 3, 1, 1, 2, 1, 2, 1, 1, 3, 1, 3, 2, 1, 3, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 1, 1, 1, 1, 1, 2, 1, 3, 1, 1, 2, 1, 2, 1, 2, 2, 1, 2, 1, 2, 1, 1, 3, 1, 1, 1, 1, 1, 1, 3, 2, 1, 3, 3, 1, 1, 2, 1, 1, 1, 2, 1, 1, 3, 1, 2, 1, 1, 3, 1, 1, 3, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 3, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 3, 3, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 2, 3, 3, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 3, 2, 2, 2, 1, 2, 3, 3, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 3, 3, 1, 1, 1, 2, 1, 1, 2, 3, 1, 1, 2, 1, 1, 1, 3, 1, 1, 2, 2, 1, 3, 1, 2, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 2, 1, 3, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 3, 3, 1, 2, 1, 2, 1, 2, 2, 2, 1, 1, 2, 1, 3, 1, 2, 3, 2, 3, 1, 1, 3, 2, 2, 1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 1, 1, 1, 1, 3, 2, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 3, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 2, 1, 1, 2, 3, 1, 1, 3, 1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 3, 2, 3, 1, 3, 1, 2, 2, 2, 2, 3, 2, 1, 1, 2, 3, 1, 1, 1, 3, 2, 3, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 1, 2, 3, 2, 2, 1, 3, 1, 1, 1, 1, 3, 1, 3, 1, 2, 1, 1, 2, 3, 1, 1, 2, 2, 2, 1, 2, 1, 1, 2, 1, 1, 1, 2, 2, 2, 2, 2, 1, 3, 1, 3, 1, 1, 1, 1, 1, 3, 2, 1, 1, 2, 1, 1, 2, 1, 3, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 3, 3, 3, 1, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 3, 3, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 3, 1, 3, 3, 1, 2, 1, 2, 2, 1, 1, 1, 1, 1, 2, 1, 2, 3, 1, 1, 1, 1, 1, 1, 2, 1, 1, 3, 1, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 3, 1, 3, 1, 3, 1, 2, 3, 1, 1, 1, 3, 1, 2, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 3, 2, 2, 3, 1, 2, 2, 1, 1, 1, 1, 2, 1, 1, 2, 3, 1, 1, 2, 2, 1, 3, 1, 3, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 1, 1, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 3, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 3, 1, 2, 1, 1, 2, 2, 2, 2, 3, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 2, 2, 1, 1, 3, 2, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1, 3, 1, 2, 2, 2, 1, 3, 2, 1, 1, 1, 1, 1, 3, 3, 3, 1, 3, 2, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 1, 3, 3, 1, 2, 2, 1, 3, 1, 2, 2, 1, 1, 1, 3, 2, 1, 1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 2, 3, 1, 1, 1, 1, 3, 1, 1, 2, 2, 1, 1, 1, 1, 3, 1, 2, 2, 2, 1, 3, 2, 1, 1, 1, 1, 1, 3, 1, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 3, 3, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 1, 1, 2, 3, 1, 2, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 2, 2, 2, 3, 1, 2, 1, 1, 1, 1, 3, 1, 3, 2, 3, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 3, 1, 2, 1, 1, 3, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 3, 1, 1, 1, 1, 2, 2, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 3, 2, 1, 1, 2, 1, 2, 3, 3, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 2, 1, 1, 2, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 2, 3, 1, 1, 1, 3, 1, 1, 1, 2, 1, 2, 1, 1, 1, 2, 3, 1, 2, 1, 1, 1, 1, 2, 2, 3, 1, 1, 1, 2, 1, 1, 1, 1, 3, 2, 2, 2, 1, 1, 1, 3, 1, 3, 2, 2, 1, 3, 1, 1, 1, 2, 1, 1, 3, 1, 2, 1, 2, 2, 2, 3, 1, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 2, 3, 3, 2, 2, 3, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 1, 1, 2, 2, 1, 1, 3, 3, 1, 3, 1, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 2, 1, 2, 1, 1, 2, 3, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 2, 3, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 3, 1, 2, 1, 1, 1, 1, 3, 2, 2, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 3, 1, 3, 1, 2, 2, 2, 1, 1, 1, 2, 2, 1, 1, 3, 1, 3, 1, 1, 2, 1, 3, 1, 2, 2, 1, 2, 1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 3, 1, 1, 1, 2, 3, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 2, 2, 1, 2, 1, 2, 3, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 3, 1, 2, 1, 1, 3, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 3, 1, 3, 1, 1, 1, 1, 2, 1, 3, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 2, 1, 2, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 3, 1, 1, 1, 3, 2, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1, 3, 1, 1, 3, 2, 1, 3, 2, 2, 1, 2, 2, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 3, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 3, 1, 2, 1, 1, 1, 3, 2, 1, 1, 1, 2, 1, 1, 1, 3, 3, 2, 1, 2, 2, 1, 1, 3, 1, 3, 1, 3, 2, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 3, 1, 2, 1, 2, 2, 1, 1, 1, 2, 1, 2, 1, 3, 2, 1, 1, 1, 2, 3, 3, 1, 1, 2, 2, 2, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 3, 1, 2, 2, 1, 2, 3, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 3, 1, 3, 2, 1, 3, 1, 3, 1, 2, 1, 2, 2, 1, 1, 2, 3, 1, 1, 3, 1, 2, 1, 1, 2, 1, 1, 1, 2, 3, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 2, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 2, 1, 1, 1, 1, 1, 2, 1, 2, 2, 3, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 2, 2, 1, 2, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 3, 2, 1, 1, 1, 3, 1, 3, 1, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 3, 2, 1, 1, 2, 1, 3, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 2, 2, 1, 1, 1, 2, 3, 1, 1, 1, 1, 1, 3, 1, 1, 2, 3, 2, 1, 1, 3, 2, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1, 3, 1, 1, 1, 2, 3, 1, 1, 1, 2, 1, 1, 1, 2, 3, 3, 1, 1, 2, 2, 1, 1, 1, 3, 1, 1, 3, 3, 1, 3, 1, 1, 1, 2, 2, 2, 1, 3, 1, 3, 1, 1, 1, 1, 1, 3, 1, 3, 2, 2, 3, 1, 3, 2, 3, 1, 1, 1, 1, 1, 1, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 2, 2, 1, 1, 2, 2, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 3, 1, 1, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1, 3, 1, 3, 1, 1, 1, 2, 1, 3, 1, 2, 1, 1, 1, 3, 2, 3, 1, 1, 2, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 3, 2, 3, 1, 1, 3, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 3, 1, 1, 1, 1, 2, 2, 1, 2, 2, 1, 1, 1, 2, 1, 1, 2, 2, 3, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 2, 3, 1, 1, 2, 2, 1, 1, 3, 2, 2, 1, 2, 3, 1, 1, 1, 1, 1, 1, 3, 3, 2, 1, 1, 3, 3, 1, 2, 2, 1, 3, 1, 1, 1, 3, 1, 3, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 3, 1, 3, 1, 1, 1, 1, 3, 1, 1, 1, 2, 1, 1, 1, 3, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 3, 2, 3, 1, 1, 3, 3, 1, 1, 3, 3, 1, 1, 1, 2, 1, 2, 1, 2, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 3, 1, 1, 1, 2, 3, 1, 3, 1, 2, 2, 1, 2, 1, 1, 2, 1, 1, 3, 1, 1, 1, 1, 1, 2, 2, 2, 1, 3, 1, 1, 2, 1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 2, 3, 1, 1, 3, 1, 1, 2, 2, 1, 2, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 1, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 3, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 3, 1, 2, 2, 1, 1, 1, 3, 3, 1, 3, 1, 1, 2, 1, 2, 1, 1, 3, 1, 1, 1, 2, 2, 2, 1, 2, 1, 3, 1, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 2, 2, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 1, 2, 2, 2, 1, 1, 3, 1, 2, 3, 1, 1, 3, 1, 1, 2, 2, 1, 1, 1, 2, 1, 2, 2, 1, 3, 3, 1, 2, 1, 3, 1, 2, 2, 1, 1, 1, 3, 1, 2, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 3, 1, 3, 2, 1, 1, 1, 3, 1, 1, 3, 1, 2, 1, 1, 1, 2, 1, 2, 3, 1, 2, 1, 2, 1, 1, 1, 3, 1, 2, 1, 1, 1, 1, 1, 3, 3, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 3, 1, 1, 1, 1, 2, 1, 2, 1, 3, 2, 3, 2, 1, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 2, 1, 2, 1, 1, 2, 2, 1, 2, 3, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 3, 1, 1, 3, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 3, 3, 2, 1, 1, 1, 3, 2, 3, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 3, 1, 1, 1, 3, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 2, 3, 1, 3, 1, 1, 1, 1, 3, 1, 1, 1, 1, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 2, 3, 1, 1, 2, 3, 2, 1, 3, 3, 1, 1, 2, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 1, 3, 1, 1, 2, 1, 1, 1, 2, 1, 2, 1, 2, 2, 2, 1, 1, 3, 3, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 2, 1, 1, 1, 2, 2, 3, 1, 1, 1, 2, 2, 3, 1, 2, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 3, 1, 1, 1, 2, 2, 1, 1, 2, 2, 1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 2, 2, 1, 1, 2, 1, 2, 1, 1, 1, 2, 3, 3, 3, 2, 2, 1, 2, 1, 1, 1, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 2, 1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 3, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 3, 2, 1, 3, 3, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 3, 1, 1, 2, 3, 2, 1, 3, 1, 3, 3, 2, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 2, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 1, 1, 1, 2, 3, 1, 1, 1, 3, 3, 1, 3, 1, 2, 3, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 2, 1, 2, 1, 2, 3, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 1, 3, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 2, 1, 1, 1, 2, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 3, 2, 1, 1, 1, 1, 1, 1, 3, 2, 2, 1, 2, 1, 1, 2, 1, 1, 1, 3, 1, 1, 2, 1, 1, 1, 1, 3, 1, 2, 1, 2, 2, 2, 1, 1, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 3, 2, 3, 2, 1, 1, 3, 2, 2, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 3, 1, 2, 3, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 2, 1, 2, 1, 2, 2, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 3, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 2, 1, 1, 1, 2, 3, 1, 1, 2, 1, 2, 1, 1, 1, 2, 1, 1, 3, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 2, 1, 1, 1, 2, 2, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 2, 1, 1, 3, 3, 1, 2, 1, 3, 1, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 2, 1, 3, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 3, 2, 2, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2]\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "-NFvfxSCcy1Y"
+      },
+      "source": [
+        "col_drop = data_test.columns.tolist()"
+      ],
+      "execution_count": 97,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "PyJiexJAcac-"
+      },
+      "source": [
+        "submission = data_test.drop(col_drop, 1)"
+      ],
+      "execution_count": 98,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "UVDFU94MdF9Y"
+      },
+      "source": [
+        "submission['Reservation_status'] = DataFrame(test_predictions,columns=['Reservation_status'])['Reservation_status'].values"
+      ],
+      "execution_count": 99,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 235
+        },
+        "id": "IWPkUTRqe5pN",
+        "outputId": "deb2b0e0-1231-43ce-f29e-6c616f8dba7c"
+      },
+      "source": [
+        "submission.head()"
+      ],
+      "execution_count": 100,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Reservation_status</th>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>Reservation-id</th>\n",
+              "      <th></th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>62931593</th>\n",
+              "      <td>2</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>70586099</th>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4230648</th>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>25192322</th>\n",
+              "      <td>2</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>80931528</th>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "                Reservation_status\n",
+              "Reservation-id                    \n",
+              "62931593                         2\n",
+              "70586099                         1\n",
+              "4230648                          1\n",
+              "25192322                         2\n",
+              "80931528                         1"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 100
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "tniFzEWcdHNl"
+      },
+      "source": [
+        "submission.to_csv('submission2-day1.csv')"
+      ],
+      "execution_count": 101,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Qnn4jSyceTCl"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}

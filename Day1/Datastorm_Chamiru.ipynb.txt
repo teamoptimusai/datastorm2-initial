@@ -1,0 +1,1568 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Datastorm-Chamiru.ipynb",
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "EpbjJgea0lZV"
+      },
+      "source": [
+        ""
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "PO5FAWfhnIvh"
+      },
+      "source": [
+        "# Data loading"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "F4hTKIPolfA0",
+        "outputId": "1c7ee6ae-f31a-48bd-b5ff-96eb64efcff7"
+      },
+      "source": [
+        "!gdown --id 1MIKKj8Gi-xUwhsYt6xEV6FSmX0_Le8iL\n",
+        "!unzip -q 'data-storm-20.zip'"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Downloading...\n",
+            "From: https://drive.google.com/uc?id=1MIKKj8Gi-xUwhsYt6xEV6FSmX0_Le8iL\n",
+            "To: /content/data-storm-20.zip\n",
+            "\r  0% 0.00/1.23M [00:00<?, ?B/s]\r100% 1.23M/1.23M [00:00<00:00, 80.1MB/s]\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "cQKYCkrmnPix"
+      },
+      "source": [
+        "# Libraries"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "PP0dsDlBnRbA"
+      },
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "import matplotlib.pyplot as plt"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "UAU9ovfcnMrd"
+      },
+      "source": [
+        "# Data Analysis"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "nmC1gnrkp0KI"
+      },
+      "source": [
+        "## Basic"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "CWQiP9yOmvQE",
+        "outputId": "7f523daa-afdc-4c19-d396-7c1be88a4a72"
+      },
+      "source": [
+        "df = pd.read_csv('Hotel-A-train.csv')\n",
+        "df.head()"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Reservation-id</th>\n",
+              "      <th>Gender</th>\n",
+              "      <th>Age</th>\n",
+              "      <th>Ethnicity</th>\n",
+              "      <th>Educational_Level</th>\n",
+              "      <th>Income</th>\n",
+              "      <th>Country_region</th>\n",
+              "      <th>Hotel_Type</th>\n",
+              "      <th>Expected_checkin</th>\n",
+              "      <th>Expected_checkout</th>\n",
+              "      <th>Booking_date</th>\n",
+              "      <th>Adults</th>\n",
+              "      <th>Children</th>\n",
+              "      <th>Babies</th>\n",
+              "      <th>Meal_Type</th>\n",
+              "      <th>Visted_Previously</th>\n",
+              "      <th>Previous_Cancellations</th>\n",
+              "      <th>Deposit_type</th>\n",
+              "      <th>Booking_channel</th>\n",
+              "      <th>Required_Car_Parking</th>\n",
+              "      <th>Reservation_Status</th>\n",
+              "      <th>Use_Promotion</th>\n",
+              "      <th>Discount_Rate</th>\n",
+              "      <th>Room_Rate</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>39428300</td>\n",
+              "      <td>F</td>\n",
+              "      <td>40</td>\n",
+              "      <td>Latino</td>\n",
+              "      <td>Grad</td>\n",
+              "      <td>&lt;25K</td>\n",
+              "      <td>North</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>7/1/2015</td>\n",
+              "      <td>7/2/2015</td>\n",
+              "      <td>5/21/2015</td>\n",
+              "      <td>2</td>\n",
+              "      <td>2</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Online</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>10</td>\n",
+              "      <td>218</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>77491756</td>\n",
+              "      <td>F</td>\n",
+              "      <td>49</td>\n",
+              "      <td>Latino</td>\n",
+              "      <td>Mid-School</td>\n",
+              "      <td>50K -- 100K</td>\n",
+              "      <td>East</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>7/1/2015</td>\n",
+              "      <td>7/2/2015</td>\n",
+              "      <td>5/26/2015</td>\n",
+              "      <td>3</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>Refundable</td>\n",
+              "      <td>Online</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>No</td>\n",
+              "      <td>0</td>\n",
+              "      <td>185</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>73747291</td>\n",
+              "      <td>F</td>\n",
+              "      <td>42</td>\n",
+              "      <td>caucasian</td>\n",
+              "      <td>Grad</td>\n",
+              "      <td>&lt;25K</td>\n",
+              "      <td>East</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>7/2/2015</td>\n",
+              "      <td>7/6/2015</td>\n",
+              "      <td>6/29/2015</td>\n",
+              "      <td>3</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Online</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>No</td>\n",
+              "      <td>0</td>\n",
+              "      <td>119</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>67301739</td>\n",
+              "      <td>M</td>\n",
+              "      <td>25</td>\n",
+              "      <td>African American</td>\n",
+              "      <td>College</td>\n",
+              "      <td>&gt;100K</td>\n",
+              "      <td>South</td>\n",
+              "      <td>Airport Hotels</td>\n",
+              "      <td>7/2/2015</td>\n",
+              "      <td>7/3/2015</td>\n",
+              "      <td>6/20/2015</td>\n",
+              "      <td>4</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>Refundable</td>\n",
+              "      <td>Agent</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>5</td>\n",
+              "      <td>144</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>77222321</td>\n",
+              "      <td>F</td>\n",
+              "      <td>62</td>\n",
+              "      <td>Latino</td>\n",
+              "      <td>High-School</td>\n",
+              "      <td>25K --50K</td>\n",
+              "      <td>East</td>\n",
+              "      <td>Resort</td>\n",
+              "      <td>7/3/2015</td>\n",
+              "      <td>7/4/2015</td>\n",
+              "      <td>6/20/2015</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Direct</td>\n",
+              "      <td>No</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>10</td>\n",
+              "      <td>242</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "   Reservation-id Gender  Age  ... Use_Promotion Discount_Rate Room_Rate\n",
+              "0        39428300      F   40  ...           Yes            10       218\n",
+              "1        77491756      F   49  ...            No             0       185\n",
+              "2        73747291      F   42  ...            No             0       119\n",
+              "3        67301739      M   25  ...           Yes             5       144\n",
+              "4        77222321      F   62  ...           Yes            10       242\n",
+              "\n",
+              "[5 rows x 24 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 4
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Rjl3rQRNm4Np",
+        "outputId": "3ccd1062-e00d-4b52-c196-a95b50fd09d8"
+      },
+      "source": [
+        "df.dtypes"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Reservation-id             int64\n",
+              "Gender                    object\n",
+              "Age                        int64\n",
+              "Ethnicity                 object\n",
+              "Educational_Level         object\n",
+              "Income                    object\n",
+              "Country_region            object\n",
+              "Hotel_Type                object\n",
+              "Expected_checkin          object\n",
+              "Expected_checkout         object\n",
+              "Booking_date              object\n",
+              "Adults                     int64\n",
+              "Children                   int64\n",
+              "Babies                     int64\n",
+              "Meal_Type                 object\n",
+              "Visted_Previously         object\n",
+              "Previous_Cancellations    object\n",
+              "Deposit_type              object\n",
+              "Booking_channel           object\n",
+              "Required_Car_Parking      object\n",
+              "Reservation_Status        object\n",
+              "Use_Promotion             object\n",
+              "Discount_Rate              int64\n",
+              "Room_Rate                  int64\n",
+              "dtype: object"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 5
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Dr2giYLPnzQj",
+        "outputId": "3c119a83-14c2-493d-b263-7ee988127075"
+      },
+      "source": [
+        "df.shape"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(27499, 24)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 6
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "THorlmaSor0q",
+        "outputId": "542013cc-f016-4c64-c6cc-77e4075ff127"
+      },
+      "source": [
+        "df.describe()"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Reservation-id</th>\n",
+              "      <th>Age</th>\n",
+              "      <th>Adults</th>\n",
+              "      <th>Children</th>\n",
+              "      <th>Babies</th>\n",
+              "      <th>Discount_Rate</th>\n",
+              "      <th>Room_Rate</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>count</th>\n",
+              "      <td>2.749900e+04</td>\n",
+              "      <td>27499.000000</td>\n",
+              "      <td>27499.000000</td>\n",
+              "      <td>27499.000000</td>\n",
+              "      <td>27499.000000</td>\n",
+              "      <td>27499.000000</td>\n",
+              "      <td>27499.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>mean</th>\n",
+              "      <td>5.016461e+07</td>\n",
+              "      <td>43.977454</td>\n",
+              "      <td>2.333576</td>\n",
+              "      <td>1.743882</td>\n",
+              "      <td>0.351540</td>\n",
+              "      <td>12.495182</td>\n",
+              "      <td>175.136478</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>std</th>\n",
+              "      <td>2.886911e+07</td>\n",
+              "      <td>15.303148</td>\n",
+              "      <td>1.176526</td>\n",
+              "      <td>0.721972</td>\n",
+              "      <td>0.573326</td>\n",
+              "      <td>11.206036</td>\n",
+              "      <td>43.877087</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>min</th>\n",
+              "      <td>3.154000e+03</td>\n",
+              "      <td>18.000000</td>\n",
+              "      <td>1.000000</td>\n",
+              "      <td>1.000000</td>\n",
+              "      <td>0.000000</td>\n",
+              "      <td>0.000000</td>\n",
+              "      <td>100.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>25%</th>\n",
+              "      <td>2.523943e+07</td>\n",
+              "      <td>31.000000</td>\n",
+              "      <td>2.000000</td>\n",
+              "      <td>1.000000</td>\n",
+              "      <td>0.000000</td>\n",
+              "      <td>5.000000</td>\n",
+              "      <td>137.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>50%</th>\n",
+              "      <td>5.014996e+07</td>\n",
+              "      <td>44.000000</td>\n",
+              "      <td>2.000000</td>\n",
+              "      <td>2.000000</td>\n",
+              "      <td>0.000000</td>\n",
+              "      <td>10.000000</td>\n",
+              "      <td>175.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>75%</th>\n",
+              "      <td>7.518288e+07</td>\n",
+              "      <td>57.000000</td>\n",
+              "      <td>3.000000</td>\n",
+              "      <td>2.000000</td>\n",
+              "      <td>1.000000</td>\n",
+              "      <td>20.000000</td>\n",
+              "      <td>214.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>max</th>\n",
+              "      <td>9.999900e+07</td>\n",
+              "      <td>70.000000</td>\n",
+              "      <td>5.000000</td>\n",
+              "      <td>3.000000</td>\n",
+              "      <td>2.000000</td>\n",
+              "      <td>40.000000</td>\n",
+              "      <td>250.000000</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "       Reservation-id           Age  ...  Discount_Rate     Room_Rate\n",
+              "count    2.749900e+04  27499.000000  ...   27499.000000  27499.000000\n",
+              "mean     5.016461e+07     43.977454  ...      12.495182    175.136478\n",
+              "std      2.886911e+07     15.303148  ...      11.206036     43.877087\n",
+              "min      3.154000e+03     18.000000  ...       0.000000    100.000000\n",
+              "25%      2.523943e+07     31.000000  ...       5.000000    137.000000\n",
+              "50%      5.014996e+07     44.000000  ...      10.000000    175.000000\n",
+              "75%      7.518288e+07     57.000000  ...      20.000000    214.000000\n",
+              "max      9.999900e+07     70.000000  ...      40.000000    250.000000\n",
+              "\n",
+              "[8 rows x 7 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 7
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "d4KMaxmqovf2",
+        "outputId": "c4895b41-d001-4cb9-be76-283d8b448e0b"
+      },
+      "source": [
+        "df.isnull().sum()"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Reservation-id            0\n",
+              "Gender                    0\n",
+              "Age                       0\n",
+              "Ethnicity                 0\n",
+              "Educational_Level         0\n",
+              "Income                    0\n",
+              "Country_region            0\n",
+              "Hotel_Type                0\n",
+              "Expected_checkin          0\n",
+              "Expected_checkout         0\n",
+              "Booking_date              0\n",
+              "Adults                    0\n",
+              "Children                  0\n",
+              "Babies                    0\n",
+              "Meal_Type                 0\n",
+              "Visted_Previously         0\n",
+              "Previous_Cancellations    0\n",
+              "Deposit_type              0\n",
+              "Booking_channel           0\n",
+              "Required_Car_Parking      0\n",
+              "Reservation_Status        0\n",
+              "Use_Promotion             0\n",
+              "Discount_Rate             0\n",
+              "Room_Rate                 0\n",
+              "dtype: int64"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 8
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "555hmgzWpsHF"
+      },
+      "source": [
+        "## Unique categories"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "tMQg7CISphTC",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "92210bb2-2765-4fab-ba5d-3050a518d828"
+      },
+      "source": [
+        "df.dtypes"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Reservation-id             int64\n",
+              "Gender                    object\n",
+              "Age                        int64\n",
+              "Ethnicity                 object\n",
+              "Educational_Level         object\n",
+              "Income                    object\n",
+              "Country_region            object\n",
+              "Hotel_Type                object\n",
+              "Expected_checkin          object\n",
+              "Expected_checkout         object\n",
+              "Booking_date              object\n",
+              "Adults                     int64\n",
+              "Children                   int64\n",
+              "Babies                     int64\n",
+              "Meal_Type                 object\n",
+              "Visted_Previously         object\n",
+              "Previous_Cancellations    object\n",
+              "Deposit_type              object\n",
+              "Booking_channel           object\n",
+              "Required_Car_Parking      object\n",
+              "Reservation_Status        object\n",
+              "Use_Promotion             object\n",
+              "Discount_Rate              int64\n",
+              "Room_Rate                  int64\n",
+              "dtype: object"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 9
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "nYpvxzGjsao8",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "4a6b5120-1e17-4e2b-c591-68dfde6524f2"
+      },
+      "source": [
+        "df.columns"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Index(['Reservation-id', 'Gender', 'Age', 'Ethnicity', 'Educational_Level',\n",
+              "       'Income', 'Country_region', 'Hotel_Type', 'Expected_checkin',\n",
+              "       'Expected_checkout', 'Booking_date', 'Adults', 'Children', 'Babies',\n",
+              "       'Meal_Type', 'Visted_Previously', 'Previous_Cancellations',\n",
+              "       'Deposit_type', 'Booking_channel', 'Required_Car_Parking',\n",
+              "       'Reservation_Status', 'Use_Promotion', 'Discount_Rate', 'Room_Rate'],\n",
+              "      dtype='object')"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 10
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "-E7ASH6CqMui",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "56711a58-7cc3-4d06-b0c5-bbc7fa4592d5"
+      },
+      "source": [
+        "object_cols = ['Gender', 'Ethnicity', 'Educational_Level',\n",
+        "       'Income', 'Country_region', 'Hotel_Type', \n",
+        "       'Meal_Type', 'Visted_Previously', 'Previous_Cancellations',\n",
+        "       'Deposit_type', 'Booking_channel', 'Required_Car_Parking',\n",
+        "       'Reservation_Status', 'Use_Promotion'] \n",
+        "\n",
+        "dates = ['Expected_checkin', 'Expected_checkout', 'Booking_date',]\n",
+        "\n",
+        "len(object_cols), len(dates)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(14, 3)"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 11
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "0cIzhcpFq3Rj",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "ab3cd7bf-0bf3-4a58-b72c-22037b8e4ccf"
+      },
+      "source": [
+        "for col in object_cols:\n",
+        "  print(col)\n",
+        "  print(pd.unique(df[col]), '\\n')"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Gender\n",
+            "['F' 'M'] \n",
+            "\n",
+            "Ethnicity\n",
+            "['Latino' 'caucasian' 'African American' 'Asian American'] \n",
+            "\n",
+            "Educational_Level\n",
+            "['Grad' 'Mid-School' 'College' 'High-School'] \n",
+            "\n",
+            "Income\n",
+            "['<25K' '50K -- 100K' '>100K' '25K --50K'] \n",
+            "\n",
+            "Country_region\n",
+            "['North' 'East' 'South' 'West'] \n",
+            "\n",
+            "Hotel_Type\n",
+            "['City Hotel' 'Airport Hotels' 'Resort'] \n",
+            "\n",
+            "Meal_Type\n",
+            "['BB' 'FB' 'HB'] \n",
+            "\n",
+            "Visted_Previously\n",
+            "['No' 'Yes'] \n",
+            "\n",
+            "Previous_Cancellations\n",
+            "['No' 'Yes'] \n",
+            "\n",
+            "Deposit_type\n",
+            "['No Deposit' 'Refundable' 'Non-Refundable'] \n",
+            "\n",
+            "Booking_channel\n",
+            "['Online' 'Agent' 'Direct'] \n",
+            "\n",
+            "Required_Car_Parking\n",
+            "['Yes' 'No'] \n",
+            "\n",
+            "Reservation_Status\n",
+            "['Check-In' 'Canceled' 'No-Show'] \n",
+            "\n",
+            "Use_Promotion\n",
+            "['Yes' 'No'] \n",
+            "\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "Nyv5iMVmu-16"
+      },
+      "source": [
+        "## Feature Engineering"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "OaVuCrE55_e6"
+      },
+      "source": [
+        "Converting to Datetime Objects"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "h91DvSIa4cP7"
+      },
+      "source": [
+        "df[dates[0]] = pd.to_datetime(df[dates[0]])\r\n",
+        "df[dates[1]] = pd.to_datetime(df[dates[1]])\r\n",
+        "df[dates[2]] = pd.to_datetime(df[dates[2]])"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 165
+        },
+        "id": "y8gmdDBw3MgJ",
+        "outputId": "1d35ad5c-0ae9-484b-9160-8e72fe21d83f"
+      },
+      "source": [
+        "df.head(2)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Reservation-id</th>\n",
+              "      <th>Gender</th>\n",
+              "      <th>Age</th>\n",
+              "      <th>Ethnicity</th>\n",
+              "      <th>Educational_Level</th>\n",
+              "      <th>Income</th>\n",
+              "      <th>Country_region</th>\n",
+              "      <th>Hotel_Type</th>\n",
+              "      <th>Expected_checkin</th>\n",
+              "      <th>Expected_checkout</th>\n",
+              "      <th>Booking_date</th>\n",
+              "      <th>Adults</th>\n",
+              "      <th>Children</th>\n",
+              "      <th>Babies</th>\n",
+              "      <th>Meal_Type</th>\n",
+              "      <th>Visted_Previously</th>\n",
+              "      <th>Previous_Cancellations</th>\n",
+              "      <th>Deposit_type</th>\n",
+              "      <th>Booking_channel</th>\n",
+              "      <th>Required_Car_Parking</th>\n",
+              "      <th>Reservation_Status</th>\n",
+              "      <th>Use_Promotion</th>\n",
+              "      <th>Discount_Rate</th>\n",
+              "      <th>Room_Rate</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>39428300</td>\n",
+              "      <td>F</td>\n",
+              "      <td>40</td>\n",
+              "      <td>Latino</td>\n",
+              "      <td>Grad</td>\n",
+              "      <td>&lt;25K</td>\n",
+              "      <td>North</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>2015-07-01</td>\n",
+              "      <td>2015-07-02</td>\n",
+              "      <td>2015-05-21</td>\n",
+              "      <td>2</td>\n",
+              "      <td>2</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Online</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>10</td>\n",
+              "      <td>218</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>77491756</td>\n",
+              "      <td>F</td>\n",
+              "      <td>49</td>\n",
+              "      <td>Latino</td>\n",
+              "      <td>Mid-School</td>\n",
+              "      <td>50K -- 100K</td>\n",
+              "      <td>East</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>2015-07-01</td>\n",
+              "      <td>2015-07-02</td>\n",
+              "      <td>2015-05-26</td>\n",
+              "      <td>3</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>Refundable</td>\n",
+              "      <td>Online</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>No</td>\n",
+              "      <td>0</td>\n",
+              "      <td>185</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "   Reservation-id Gender  Age  ... Use_Promotion Discount_Rate Room_Rate\n",
+              "0        39428300      F   40  ...           Yes            10       218\n",
+              "1        77491756      F   49  ...            No             0       185\n",
+              "\n",
+              "[2 rows x 24 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 14
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "KQ1LHPR73Il-",
+        "outputId": "b03d5ef3-2921-4657-c44c-a251aa35aca4"
+      },
+      "source": [
+        "dates"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "['Expected_checkin', 'Expected_checkout', 'Booking_date']"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 15
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "Gs55Kyc8vQez"
+      },
+      "source": [
+        "Adding Expected stay Column "
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "OeSoiuVe-yZ_",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "b25238e8-60c8-415d-99a3-8131eccf6c8f"
+      },
+      "source": [
+        "df['Expected_stay'] = (df[dates[1]] - df[dates[0]]).dt.days\r\n",
+        "df['Expected_stay'].unique()"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([1, 4, 3, 2])"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 16
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "C4lc4oLd11Zr"
+      },
+      "source": [
+        "Adding Days between Reservation and Checking in Column"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "uDQM-l8Ovd9O"
+      },
+      "source": [
+        "df['Booking_to_checkingin'] = (df[dates[0]] - df[dates[2]]).dt.days"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "xYrhiZgm7V5n"
+      },
+      "source": [
+        "#df['Booking_to_checkingin'] .unique()"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "Jc-AuHxw7Sxt"
+      },
+      "source": [
+        "Finding the weekend stays"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Cg_eDdOyzUG-"
+      },
+      "source": [
+        "weekdayin = df[dates[0]].dt.dayofweek\r\n",
+        "\r\n",
+        "weekdayout = df[dates[1]].dt.dayofweek\r\n",
+        "from pandas import DataFrame\r\n",
+        "\r\n",
+        "fina = []\r\n",
+        "for x,y in zip(weekdayin, weekdayout):\r\n",
+        "  t = []\r\n",
+        "  if y >= x:\r\n",
+        "    for i in range(x, y + 1):\r\n",
+        "      t.append(i)\r\n",
+        "    if 5 in t or 6 in t:\r\n",
+        "      fina.append(1)\r\n",
+        "    else:\r\n",
+        "      fina.append(0)\r\n",
+        "  else:\r\n",
+        "    for i in range(x, 7):\r\n",
+        "      t.append(i)\r\n",
+        "    for j in range(0, y + 1):\r\n",
+        "      t.append(i)\r\n",
+        "    if 5 in t or 6 in t:\r\n",
+        "      fina.append(1)\r\n",
+        "    else:\r\n",
+        "      fina.append(0)\r\n",
+        "xf = DataFrame (fina,columns=['weekend_stay'])\r\n",
+        "df['weekend_stay'] = xf"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "2eJBXNNKNnNB"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 419
+        },
+        "id": "vBm_rvdeMmtt",
+        "outputId": "c7976201-4e16-4aff-f722-f7ff62a0a669"
+      },
+      "source": [
+        "xf"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>weekend_stay</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>...</th>\n",
+              "      <td>...</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>27494</th>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>27495</th>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>27496</th>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>27497</th>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>27498</th>\n",
+              "      <td>0</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "<p>27499 rows × 1 columns</p>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "       weekend_stay\n",
+              "0                 0\n",
+              "1                 0\n",
+              "2                 1\n",
+              "3                 0\n",
+              "4                 1\n",
+              "...             ...\n",
+              "27494             0\n",
+              "27495             0\n",
+              "27496             0\n",
+              "27497             0\n",
+              "27498             0\n",
+              "\n",
+              "[27499 rows x 1 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 19
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "d0u5x2RL7cMs"
+      },
+      "source": [
+        "Month of Staying"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "b7E6YaOy7c-e"
+      },
+      "source": [
+        "df['Month_of_stay'] = df[dates[0]].dt.month"
+      ],
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 292
+        },
+        "id": "m3f1Y_xF3fyK",
+        "outputId": "80238d77-040c-4580-c402-bbf84c7439aa"
+      },
+      "source": [
+        "df.head(5)"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>Reservation-id</th>\n",
+              "      <th>Gender</th>\n",
+              "      <th>Age</th>\n",
+              "      <th>Ethnicity</th>\n",
+              "      <th>Educational_Level</th>\n",
+              "      <th>Income</th>\n",
+              "      <th>Country_region</th>\n",
+              "      <th>Hotel_Type</th>\n",
+              "      <th>Expected_checkin</th>\n",
+              "      <th>Expected_checkout</th>\n",
+              "      <th>Booking_date</th>\n",
+              "      <th>Adults</th>\n",
+              "      <th>Children</th>\n",
+              "      <th>Babies</th>\n",
+              "      <th>Meal_Type</th>\n",
+              "      <th>Visted_Previously</th>\n",
+              "      <th>Previous_Cancellations</th>\n",
+              "      <th>Deposit_type</th>\n",
+              "      <th>Booking_channel</th>\n",
+              "      <th>Required_Car_Parking</th>\n",
+              "      <th>Reservation_Status</th>\n",
+              "      <th>Use_Promotion</th>\n",
+              "      <th>Discount_Rate</th>\n",
+              "      <th>Room_Rate</th>\n",
+              "      <th>Expected_stay</th>\n",
+              "      <th>Booking_to_checkingin</th>\n",
+              "      <th>weekend_stay</th>\n",
+              "      <th>Month_of_stay</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>39428300</td>\n",
+              "      <td>F</td>\n",
+              "      <td>40</td>\n",
+              "      <td>Latino</td>\n",
+              "      <td>Grad</td>\n",
+              "      <td>&lt;25K</td>\n",
+              "      <td>North</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>2015-07-01</td>\n",
+              "      <td>2015-07-02</td>\n",
+              "      <td>2015-05-21</td>\n",
+              "      <td>2</td>\n",
+              "      <td>2</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Online</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>10</td>\n",
+              "      <td>218</td>\n",
+              "      <td>1</td>\n",
+              "      <td>41</td>\n",
+              "      <td>0</td>\n",
+              "      <td>7</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>77491756</td>\n",
+              "      <td>F</td>\n",
+              "      <td>49</td>\n",
+              "      <td>Latino</td>\n",
+              "      <td>Mid-School</td>\n",
+              "      <td>50K -- 100K</td>\n",
+              "      <td>East</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>2015-07-01</td>\n",
+              "      <td>2015-07-02</td>\n",
+              "      <td>2015-05-26</td>\n",
+              "      <td>3</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>Refundable</td>\n",
+              "      <td>Online</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>No</td>\n",
+              "      <td>0</td>\n",
+              "      <td>185</td>\n",
+              "      <td>1</td>\n",
+              "      <td>36</td>\n",
+              "      <td>0</td>\n",
+              "      <td>7</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>73747291</td>\n",
+              "      <td>F</td>\n",
+              "      <td>42</td>\n",
+              "      <td>caucasian</td>\n",
+              "      <td>Grad</td>\n",
+              "      <td>&lt;25K</td>\n",
+              "      <td>East</td>\n",
+              "      <td>City Hotel</td>\n",
+              "      <td>2015-07-02</td>\n",
+              "      <td>2015-07-06</td>\n",
+              "      <td>2015-06-29</td>\n",
+              "      <td>3</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Online</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>No</td>\n",
+              "      <td>0</td>\n",
+              "      <td>119</td>\n",
+              "      <td>4</td>\n",
+              "      <td>3</td>\n",
+              "      <td>1</td>\n",
+              "      <td>7</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>67301739</td>\n",
+              "      <td>M</td>\n",
+              "      <td>25</td>\n",
+              "      <td>African American</td>\n",
+              "      <td>College</td>\n",
+              "      <td>&gt;100K</td>\n",
+              "      <td>South</td>\n",
+              "      <td>Airport Hotels</td>\n",
+              "      <td>2015-07-02</td>\n",
+              "      <td>2015-07-03</td>\n",
+              "      <td>2015-06-20</td>\n",
+              "      <td>4</td>\n",
+              "      <td>3</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>Refundable</td>\n",
+              "      <td>Agent</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>5</td>\n",
+              "      <td>144</td>\n",
+              "      <td>1</td>\n",
+              "      <td>12</td>\n",
+              "      <td>0</td>\n",
+              "      <td>7</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>77222321</td>\n",
+              "      <td>F</td>\n",
+              "      <td>62</td>\n",
+              "      <td>Latino</td>\n",
+              "      <td>High-School</td>\n",
+              "      <td>25K --50K</td>\n",
+              "      <td>East</td>\n",
+              "      <td>Resort</td>\n",
+              "      <td>2015-07-03</td>\n",
+              "      <td>2015-07-04</td>\n",
+              "      <td>2015-06-20</td>\n",
+              "      <td>1</td>\n",
+              "      <td>1</td>\n",
+              "      <td>0</td>\n",
+              "      <td>BB</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No</td>\n",
+              "      <td>No Deposit</td>\n",
+              "      <td>Direct</td>\n",
+              "      <td>No</td>\n",
+              "      <td>Check-In</td>\n",
+              "      <td>Yes</td>\n",
+              "      <td>10</td>\n",
+              "      <td>242</td>\n",
+              "      <td>1</td>\n",
+              "      <td>13</td>\n",
+              "      <td>1</td>\n",
+              "      <td>7</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "   Reservation-id Gender  ...  weekend_stay Month_of_stay\n",
+              "0        39428300      F  ...             0             7\n",
+              "1        77491756      F  ...             0             7\n",
+              "2        73747291      F  ...             1             7\n",
+              "3        67301739      M  ...             0             7\n",
+              "4        77222321      F  ...             1             7\n",
+              "\n",
+              "[5 rows x 28 columns]"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 21
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "_VKxv0_o3iz8",
+        "outputId": "ad079896-988b-428e-8290-d6577f61043a"
+      },
+      "source": [
+        "df.isnull().sum()"
+      ],
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "Reservation-id            0\n",
+              "Gender                    0\n",
+              "Age                       0\n",
+              "Ethnicity                 0\n",
+              "Educational_Level         0\n",
+              "Income                    0\n",
+              "Country_region            0\n",
+              "Hotel_Type                0\n",
+              "Expected_checkin          0\n",
+              "Expected_checkout         0\n",
+              "Booking_date              0\n",
+              "Adults                    0\n",
+              "Children                  0\n",
+              "Babies                    0\n",
+              "Meal_Type                 0\n",
+              "Visted_Previously         0\n",
+              "Previous_Cancellations    0\n",
+              "Deposit_type              0\n",
+              "Booking_channel           0\n",
+              "Required_Car_Parking      0\n",
+              "Reservation_Status        0\n",
+              "Use_Promotion             0\n",
+              "Discount_Rate             0\n",
+              "Room_Rate                 0\n",
+              "Expected_stay             0\n",
+              "Booking_to_checkingin     0\n",
+              "weekend_stay              0\n",
+              "dtype: int64"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 20
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "es6UneOx3pBT"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
