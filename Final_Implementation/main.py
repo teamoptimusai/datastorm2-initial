@@ -1,11 +1,14 @@
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+# from sklearn.linear_model import LogisticRegression
+# from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier, ExtraTreesClassifier
+# from sklearn.neighbors import KNeighborsClassifier
+# from sklearn.svm import SVC
+# from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 import numpy as np
-from sklearn.utils import validation
 
 from model import Multi_Model
 from utils import prepare_training_data, prepare_data
@@ -24,14 +27,11 @@ do_validation = False
 create_submission = True
 
 train1_features, train1_labels, train2_features, train2_labels, train3_features, train3_labels, val_features, val_labels, class_weight = prepare_training_data(
-    data_train, scaler, pca, validation = do_validation)
+    data_train, scaler, pca, validation=do_validation)
 
-
-model1 = GradientBoostingClassifier()
-model2 = RandomForestClassifier(
-    random_state=0, n_jobs=-1, n_estimators=10, class_weight="balanced")
-model3 = RandomForestClassifier(
-    random_state=0, n_jobs=-1, n_estimators=10, class_weight=class_weight)
+model1 = DecisionTreeClassifier()
+model2 = DecisionTreeClassifier()
+model3 = DecisionTreeClassifier()
 
 model = Multi_Model(model1, model2, model3)
 model.fit(
