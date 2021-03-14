@@ -1,3 +1,4 @@
+[Download Report](https://github.com/teamoptimusai/datastorm2-initial/raw/master/DataStorm2.0-InitialRound-Report.pdf)
 # Final Implementation
 
  - [Multi-Model Experiment](https://github.com/teamoptimusai/datastorm2-initial#multi-model-experiment)
