@@ -9,6 +9,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 import numpy as np
+import pickle
 
 from model import Multi_Model
 from utils import prepare_training_data, prepare_data
@@ -25,18 +26,25 @@ pca = PCA(0.85)
 
 do_validation = False
 create_submission = True
+train = False
 
 train1_features, train1_labels, train2_features, train2_labels, train3_features, train3_labels, val_features, val_labels, class_weight = prepare_training_data(
     data_train, scaler, pca, validation=do_validation)
 
-model1 = DecisionTreeClassifier()
-model2 = DecisionTreeClassifier()
-model3 = DecisionTreeClassifier()
+if train:
+    model1 = DecisionTreeClassifier()
+    model2 = DecisionTreeClassifier()
+    model3 = DecisionTreeClassifier()
+else:
+    model1 = pickle.load(open('model1.sav', 'rb'))
+    model2 = pickle.load(open('model2.sav', 'rb'))
+    model3 = pickle.load(open('model3.sav', 'rb'))
 
 model = Multi_Model(model1, model2, model3)
-model.fit(
-    train1_features, train1_labels, train2_features, train2_labels, train3_features, train3_labels
-)
+if not train:
+    model.fit(
+        train1_features, train1_labels, train2_features, train2_labels, train3_features, train3_labels
+    )
 
 if do_validation:
     val_predictions = model.predict(val_features)
@@ -62,3 +70,8 @@ if create_submission:
     submission['Reservation_status'] = pd.DataFrame(submission_predictions, columns=[
                                                     'Reservation_status'])['Reservation_status'].values
     submission.to_csv('submission_file.csv')
+
+if train:
+    pickle.dump(model1, open('model1.sav', 'wb'))
+    pickle.dump(model2, open('model2.sav', 'wb'))
+    pickle.dump(model3, open('model3.sav', 'wb'))
