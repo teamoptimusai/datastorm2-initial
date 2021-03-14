@@ -1,7 +1,7 @@
 # Final Implementation
 
- - Multi-Model Experiment
- - How to Run
+ - [Multi-Model Experiment](https://github.com/teamoptimusai/datastorm2-initial#multi-model-experiment)
+ - [How to Run](https://github.com/teamoptimusai/datastorm2-initial#how-to-run)
 
 ### Multi-Model Experiment
 In Deep Learning, we sometimes use a method called Multi-Model Ensembling where we combine pertained huge neural networks parallelly and we concatenate the feature vectors coming from those Networks and then use a simple classifier (could be an ANN or a Tree-based classifier) on the concatenated feature vector for classification. In researches such as Image Classification, this method has been proven to work very well.
